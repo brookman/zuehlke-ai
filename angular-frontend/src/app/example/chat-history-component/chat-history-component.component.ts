@@ -5,7 +5,6 @@ import {NgClass, NgForOf, NgOptimizedImage} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {TagModule} from "primeng/tag";
 import {ButtonModule} from "primeng/button";
-import {delay} from "rxjs";
 import {LoadingPageComponent} from "../../shared/loading-page/loading-page.component";
 import { AvatarModule } from 'primeng/avatar';
 
