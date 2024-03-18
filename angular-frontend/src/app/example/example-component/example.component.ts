@@ -10,10 +10,10 @@ import {WebsocketService} from '../../shared/websocket-service/websocket.service
   templateUrl: './example.component.html',
   styleUrls: ['./example.component.scss']
 })
-export class ExampleComponent implements OnInit, OnDestroy {
+export class ExampleComponent {
   public exampleDto?: ExampleDto;
   public motdDto?: MotdDto;
-  public isLoading = true;
+  public isLoading = false;
 
   constructor(private remoteService: RemoteService, private websocketService: WebsocketService) {
   }
@@ -40,7 +40,7 @@ export class ExampleComponent implements OnInit, OnDestroy {
   }
 
   public async loadExamples(): Promise<void> {
-    this.isLoading = true;
+    this.isLoading = false;
 
     const data = await firstValueFrom(forkJoin({
       exampleDto: this.remoteService.get<ExampleDto>(""),
