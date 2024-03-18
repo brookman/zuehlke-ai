@@ -1,10 +1,6 @@
 <section>
   @if (!isLoading) {
-    <h1>{{exampleDto?.name}} {{exampleDto?.value}}</h1>
-    <h2>Message of the day: {{ motdDto?.content }}</h2>
-    <img [src]="motdDto?.imageUrl" alt="A cat engineering software."/>
-    <styled-button (click)="loadExamples()">Refresh</styled-button>
-
+    <chat-history-component />
     <chat-component />
   }
   @else {

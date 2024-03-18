@@ -1,0 +1,26 @@
+<p-dataView #dv [value]="chatMessages">
+  <ng-template pTemplate="list">
+    <div class="grid grid-nogutter">
+      <div class="col-12" *ngFor="let message of chatMessages; let first = first">
+        <div class="flex flex-column xl:flex-row xl:align-items-start p-4 gap-4"
+             [ngClass]="{ 'border-top-1 surface-border': !first }">
+          <p-avatar label="{{ message.user.charAt(0) }}" styleClass="mr-2" size="xlarge" shape="circle"></p-avatar>
+          <div
+            class="flex flex-column sm:flex-row justify-content-between align-items-center xl:align-items-start flex-1 gap-4">
+            <div class="flex flex-column align-items-center sm:align-items-start gap-3">
+
+              @if (message.waiting) {
+                <i class="pi pi-spinner pi-spin"></i>
+              } @else {
+                <div class="text-2xl font-bold text-900">
+                  {{ message.message }}
+                </div>
+              }
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</p-dataView>
