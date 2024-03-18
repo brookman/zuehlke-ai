@@ -20,23 +20,6 @@ export class ExampleComponent {
 
   public ngOnInit(): void {
     //this.loadExamples();
-    this.connectWebsocket().then(value => {
-      console.log('Connected');
-    });
-  }
-
-  public async connectWebsocket(): Promise<void> {
-    this.isLoading = true;
-
-    this.websocketService.connect();
-
-    this.websocketService.sendMessage('Hello from Angular');
-
-    this.isLoading = false;
-  }
-
-  ngOnDestroy() {
-    this.websocketService.disconnect();
   }
 
   public async loadExamples(): Promise<void> {
