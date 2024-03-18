@@ -5,6 +5,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { StyledButtonComponent } from '../shared/layout/styled-button/styled-button.component';
 import { OtherComponent } from './other-component/other.component';
 import { LoadingPageComponent } from '../shared/loading-page/loading-page.component';
+import {ButtonModule} from "primeng/button";
+import {ChatComponentComponent} from "./chat-component/chat-component.component";
 
 @NgModule({
   declarations: [
@@ -15,7 +17,9 @@ import { LoadingPageComponent } from '../shared/loading-page/loading-page.compon
     CommonModule,
     HttpClientModule,
     StyledButtonComponent,
-    LoadingPageComponent
+    LoadingPageComponent,
+    ButtonModule,
+    ChatComponentComponent
   ],
   exports: [
     ExampleComponent,
