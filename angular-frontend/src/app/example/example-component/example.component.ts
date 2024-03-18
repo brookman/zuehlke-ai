@@ -28,13 +28,9 @@ export class ExampleComponent implements OnInit, OnDestroy {
   public async connectWebsocket(): Promise<void> {
     this.isLoading = true;
 
-    let subject = this.websocketService.connect('ws://localhost:8088/api/websocket');
+    this.websocketService.connect();
 
-    subject.subscribe((message: MessageEvent) => {
-      console.log('message from backend: ' + message);
-    });
-
-    this.isLoading = false;
+    this.websocketService.sendMessage('Hello from Angular');
   }
 
   ngOnDestroy() {

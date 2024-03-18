@@ -1,45 +1,33 @@
-import {Injectable} from "@angular/core";
-import * as Rx from "rxjs";
+import {Injectable} from '@angular/core';
+import {WebSocketSubject} from "rxjs/internal/observable/dom/WebSocketSubject";
 
 @Injectable({
-  providedIn: "root"
+  providedIn: 'root',
 })
 export class WebsocketService {
+  private websocket?: WebSocketSubject<any>;
+
   constructor() {
   }
 
-  private subject?: Rx.Subject<MessageEvent>;
-  private websocket?: WebSocket;
+  connect() {
+    const websocket = new WebSocketSubject('ws://localhost:8080/ws');
 
-  public connect(url: string): Rx.Subject<MessageEvent> {
-    if (!this.subject) {
-      this.subject = this.create(url);
-      console.log("Successfully connected: " + url);
-    }
-    return this.subject;
+    websocket.subscribe(
+      msg => console.log('message received: ', msg), // Called whenever there is a message from the server.
+      err => console.log(err), // Called if at any point WebSocket API signals some kind of error.
+      () => console.log('complete') // Called when connection is closed (for whatever reason).
+    );
+
+    this.websocket = websocket;
   }
 
-  public disconnect() {
-    this.websocket?.close();
+  disconnect() {
+    this.websocket?.complete();
+    console.log('Disconnected');
   }
 
-  private create(url: string): Rx.Subject<MessageEvent> {
-    let ws = new WebSocket(url);
-
-    let observable = new Rx.Observable(subscriber => {
-      ws.onmessage = subscriber.next.bind(subscriber);
-      ws.onerror = subscriber.error.bind(subscriber);
-      ws.onclose = subscriber.complete.bind(subscriber);
-      return ws.close.bind(ws);
-    });
-
-    let observer = {
-      next: (data: Object) => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify(data));
-        }
-      }
-    };
-    return Rx.Subject.create(observer, observable);
+  sendMessage(message: string) {
+    this.websocket?.next(message);
   }
 }
