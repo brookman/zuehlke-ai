@@ -1,8 +1,8 @@
-<form [formGroup]="formGroup">
+<form [formGroup]="formGroup" (ngSubmit)="handleSubmit()">
 
   <p-inputGroup>
-    <input type="text" pInputText placeholder="Hi Zühlkee ..." [disabled]="false"/>
-    <button type="button" pButton icon="pi pi-send" class="p-button-help" [disabled]="false"></button>
+    <input type="text" pInputText formControlName="prompt" placeholder="Hi Zühlkee ..." />
+    <button type="submit" pButton [icon]="!isLoading ? 'pi pi-send' : 'pi pi-spin pi-spinner'" class="p-button-help" [disabled]="formGroup.invalid || isLoading"></button>
   </p-inputGroup>
 </form>
 

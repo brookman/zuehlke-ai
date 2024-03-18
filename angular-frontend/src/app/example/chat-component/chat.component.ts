@@ -1,11 +1,12 @@
-import {Component, OnInit} from '@angular/core';
-import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {InputTextareaModule} from "primeng/inputtextarea";
 import {ButtonModule} from "primeng/button";
 import {InputIconModule} from "primeng/inputicon";
 import {IconFieldModule} from "primeng/iconfield";
 import {InputGroupModule} from "primeng/inputgroup";
 import {InputTextModule} from "primeng/inputtext";
+import {WebsocketService} from "../../shared/websocket-service/websocket.service";
 
 @Component({
   selector: 'chat-component',
@@ -22,14 +23,37 @@ import {InputTextModule} from "primeng/inputtext";
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
 })
-export class ChatComponent implements OnInit{
+export class ChatComponent implements OnInit, OnDestroy{
 
   formGroup!: FormGroup;
+  public isLoading = false;
+
+  constructor(private websocketService: WebsocketService) {
+  }
 
   ngOnInit() {
+    this.websocketService.connect();
     this.formGroup = new FormGroup({
-      text: new FormControl<string | null>(null)
+      prompt: new FormControl<string | null>({value: '', disabled: false}, Validators.required)
     });
   }
 
+  handleSubmit() {
+    const promptControl = this.formGroup.get('prompt');
+
+    if (promptControl) {
+      this.connectWebsocket(promptControl.value).then(value => {
+        console.log('Message sent');
+      });
+    }
+
+  }
+
+  public async connectWebsocket(message: string): Promise<void> {
+    this.websocketService.sendMessage(message);
+  }
+
+  ngOnDestroy() {
+    this.websocketService.disconnect();
+  }
 }
