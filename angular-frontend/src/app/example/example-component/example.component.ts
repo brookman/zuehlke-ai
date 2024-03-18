@@ -31,6 +31,8 @@ export class ExampleComponent implements OnInit, OnDestroy {
     this.websocketService.connect();
 
     this.websocketService.sendMessage('Hello from Angular');
+
+    this.isLoading = false;
   }
 
   ngOnDestroy() {
