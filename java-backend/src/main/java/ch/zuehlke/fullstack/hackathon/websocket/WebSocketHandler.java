@@ -34,7 +34,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
         } catch (Exception exception) {
             String errorMessage = "Message of the day could not be fetched";
             log.error(errorMessage, exception);
-            session.sendMessage(new TextMessage(errorMessage));
+            session.sendMessage(new TextMessage("\"" + errorMessage + "\""));
         }
         session.sendMessage(new TextMessage("\"" + result.content() + "\""));
 
