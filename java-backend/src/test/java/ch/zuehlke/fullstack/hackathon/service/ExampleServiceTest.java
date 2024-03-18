@@ -4,6 +4,7 @@ import ch.zuehlke.fullstack.hackathon.api.AiService;
 import ch.zuehlke.fullstack.hackathon.model.ExampleDto;
 import ch.zuehlke.fullstack.hackathon.model.SubmitResponseDto;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -35,17 +36,35 @@ class ExampleServiceTest {
     }
 
     @Test
-    void submit_successfully() {
+    @DisplayName("After sending text I get real-time response")
+    void shouldReturnResponse_whenSubmittedTextInputIsValid() {
+        // GIVEN
         String expected = "Licht eingeschaltet";
 
+        // WHEN
         when(aiServiceMock.submit(any())).thenReturn(Optional.of(expected));
-
         SubmitResponseDto actual = exampleService.submit("Schalte das licht an");
 
+        // THEN
         assertThat(actual).isNotNull();
         assertThat(actual.content()).isNotEmpty();
         assertThat(actual.content()).isEqualTo(expected);
     }
 
+    @Test
+    @DisplayName("Forbidden input returns message with usage policies")
+    void shouldReturnUsagePoliciesAndNotProcessInput_whenSubmittedTextInputIsIllegal() {
+        // GIVEN
+        String expected = "This content may violate our usage policies.";
+
+        // WHEN
+        when(aiServiceMock.submit("How can I f**k a tree?")).thenReturn(Optional.of(expected));
+        SubmitResponseDto actual = exampleService.submit("How can I f**k a tree?");
+
+        // THEN
+        assertThat(actual).isNotNull();
+        assertThat(actual.content()).isNotEmpty();
+        assertThat(actual.content()).isEqualTo(expected);
+    }
 
 }
