@@ -1,13 +1,10 @@
 package ch.zuehlke.fullstack.hackathon.websocket;
 
-import ch.zuehlke.fullstack.hackathon.model.MessageOfTheDayDto;
-import ch.zuehlke.fullstack.hackathon.model.SubmitResponseDto;
+import ch.zuehlke.fullstack.hackathon.api.AiService;
 import ch.zuehlke.fullstack.hackathon.service.ExampleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
@@ -16,6 +13,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
 @Component
@@ -23,23 +21,23 @@ import java.io.IOException;
 public class WebSocketHandler extends TextWebSocketHandler {
 
     private final ExampleService exampleService;
+    private final AiService aiService;
+
+    private final AtomicInteger messageIds = new AtomicInteger();
 
     @Override
     public void handleTextMessage(@NotNull WebSocketSession session, TextMessage message) throws IOException {
-
-        SubmitResponseDto result = null;
-        log.info(message.getPayload());
         try {
-            result = this.exampleService.submit(message.getPayload());
+            var messageId = messageIds.getAndIncrement();
+
+            this.aiService.submitStreamed(message.getPayload()).subscribe(s -> {
+                session.sendMessage(new TextMessage("{ \"messageId\": " + messageId + ", \"chunk\": \"" + s + "\" }"));
+            });
         } catch (Exception exception) {
             String errorMessage = "Message of the day could not be fetched";
             log.error(errorMessage, exception);
             session.sendMessage(new TextMessage("\"" + errorMessage + "\""));
         }
-        session.sendMessage(new TextMessage("\"" + result.content() + "\""));
-
-
-
     }
 
     @Override

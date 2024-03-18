@@ -6,19 +6,16 @@ import io.reactivex.Flowable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.Mock;
+
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
-
-import org.mockito.InjectMocks;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 public class OpenAiApiStreamingOutputServiceTest {
@@ -35,8 +32,10 @@ public class OpenAiApiStreamingOutputServiceTest {
     @Test
     void shouldStreamOutputResponse_whenUserHasSubmittedValidTextInput() {
         // GIVEN
-        String sampleResponseContent = "Hello, World!";
-        Flowable<ChatCompletionChunk> mockFlowable = createMockFlowableForChatChunks(sampleResponseContent);
+        String sampleResponseContent1 = "Hello, World!";
+        String sampleResponseContent2 = "Hello, AI!";
+
+        Flowable<ChatCompletionChunk> mockFlowable = createMockFlowableForChatChunks(sampleResponseContent1, sampleResponseContent2);
         given(mockService.streamChatCompletion(any())).willReturn(mockFlowable);
         // Use precise argument matching, reflecting how streamChatCompletions constructs its request
         ChatCompletionRequest expectedRequest = ChatCompletionRequest.builder()
@@ -48,19 +47,27 @@ public class OpenAiApiStreamingOutputServiceTest {
 
         // WHEN
         // Call the service method that should internally subscribe to the Flowable and process it
-        List<ChatMessage> resultMessages = openAiApiStreamingOutputService.streamChatCompletions(expectedRequest);
+        var resultMessages = openAiApiStreamingOutputService.streamChatCompletions(expectedRequest)
+                .toList()
+                .blockingGet();
 
         // THEN
         verify(mockService).streamChatCompletion(any(ChatCompletionRequest.class));
-        assertEquals(1, resultMessages.size(), "Should have one message");
-        assertEquals(sampleResponseContent, resultMessages.get(0).getContent(), "Message content should match");    }
+        assertEquals(2, resultMessages.size(), "Should have one message");
+        assertEquals(sampleResponseContent1, resultMessages.get(0).getContent(), "Message content should match");
+        assertEquals(sampleResponseContent2, resultMessages.get(1).getContent(), "Message content should match");
+    }
 
-    private Flowable<ChatCompletionChunk> createMockFlowableForChatChunks(String responseContent) {
+    private Flowable<ChatCompletionChunk> createMockFlowableForChatChunks(String responseContent1, String responseContent2) {
+        return Flowable.just(createChunk(responseContent1), createChunk(responseContent2));
+    }
+
+    private ChatCompletionChunk createChunk(String responseContent) {
         ChatCompletionChunk chunk = new ChatCompletionChunk();
-        chunk.setId("sampleId"); // Set a sample or mock ID
-        chunk.setObject("chat.completion.chunk"); // Set the object type
-        chunk.setCreated(System.currentTimeMillis() / 1000); // Set the creation time
-        chunk.setModel("gpt-3.5-turbo"); // Set the model used
+        chunk.setId("sampleId");
+        chunk.setObject("chat.completion.chunk");
+        chunk.setCreated(System.currentTimeMillis() / 1000);
+        chunk.setModel("gpt-3.5-turbo");
 
         // Assuming ChatCompletionChoice has a constructor or setters to set its properties
         ChatCompletionChoice choice = new ChatCompletionChoice();
@@ -71,7 +78,6 @@ public class OpenAiApiStreamingOutputServiceTest {
         List<ChatCompletionChoice> choices = Collections.singletonList(choice);
         chunk.setChoices(choices); // Set the list of choices
 
-        return Flowable.just(chunk);
+        return chunk;
     }
-
 }

@@ -22,7 +22,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     private final AiService aiService;
 
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new WebSocketHandler(new ExampleService(aiService)), "/ws")
+        registry.addHandler(new WebSocketHandler(new ExampleService(aiService), aiService), "/ws")
                 .setAllowedOrigins("*")
                 // initial Request/Handshake interceptor
                 .addInterceptors(new HttpSessionHandshakeInterceptor() {
