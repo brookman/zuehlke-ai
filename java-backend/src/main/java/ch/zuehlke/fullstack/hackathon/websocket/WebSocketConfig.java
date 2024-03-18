@@ -1,5 +1,8 @@
 package ch.zuehlke.fullstack.hackathon.websocket;
 
+import ch.zuehlke.fullstack.hackathon.api.AiService;
+import ch.zuehlke.fullstack.hackathon.service.ExampleService;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -13,10 +16,13 @@ import java.util.Map;
 
 @Configuration
 @EnableWebSocket
+@AllArgsConstructor
 public class WebSocketConfig implements WebSocketConfigurer {
 
+    private final AiService aiService;
+
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new WebSocketHandler(), "/ws")
+        registry.addHandler(new WebSocketHandler(new ExampleService(aiService)), "/ws")
                 .setAllowedOrigins("*")
                 // initial Request/Handshake interceptor
                 .addInterceptors(new HttpSessionHandshakeInterceptor() {
