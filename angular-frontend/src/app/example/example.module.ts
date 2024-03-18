@@ -6,7 +6,7 @@ import { StyledButtonComponent } from '../shared/layout/styled-button/styled-but
 import { OtherComponent } from './other-component/other.component';
 import { LoadingPageComponent } from '../shared/loading-page/loading-page.component';
 import {ButtonModule} from "primeng/button";
-import {ChatComponentComponent} from "./chat-component/chat-component.component";
+import {ChatComponent} from "./chat-component/chat.component";
 
 @NgModule({
   declarations: [
@@ -19,7 +19,7 @@ import {ChatComponentComponent} from "./chat-component/chat-component.component"
     StyledButtonComponent,
     LoadingPageComponent,
     ButtonModule,
-    ChatComponentComponent
+    ChatComponent
   ],
   exports: [
     ExampleComponent,
