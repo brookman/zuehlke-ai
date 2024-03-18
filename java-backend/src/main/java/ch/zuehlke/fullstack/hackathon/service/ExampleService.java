@@ -1,7 +1,9 @@
 package ch.zuehlke.fullstack.hackathon.service;
 
+import ch.zuehlke.fullstack.hackathon.api.AiService;
 import ch.zuehlke.fullstack.hackathon.model.ExampleDto;
 import ch.zuehlke.fullstack.hackathon.model.MessageOfTheDayDto;
+import ch.zuehlke.fullstack.hackathon.model.SubmitResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,4 +31,10 @@ public class ExampleService {
         Optional<String> catImageUrl = aiService.getCatImageUrl();
         return new MessageOfTheDayDto(content.orElse("Could not get any message."), catImageUrl.orElse(null));
     }
+
+    public SubmitResponseDto submit(String input) {
+        Optional<String> content = aiService.submit(input);
+        return new SubmitResponseDto(content.orElse("Could not get any message."));
+    }
+
 }

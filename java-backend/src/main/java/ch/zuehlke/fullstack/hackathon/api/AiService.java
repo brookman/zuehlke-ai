@@ -1,4 +1,4 @@
-package ch.zuehlke.fullstack.hackathon.service;
+package ch.zuehlke.fullstack.hackathon.api;
 
 import com.theokanning.openai.completion.chat.ChatCompletionChoice;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
@@ -56,5 +56,21 @@ public class AiService {
         }
 
         return openAiService;
+    }
+
+    public Optional<String> submit(String input) {
+        ChatMessage message = new ChatMessage(ChatMessageRole.USER.value(), input);
+        List<ChatMessage> messages = List.of(message);
+        ChatCompletionRequest chatRequest = ChatCompletionRequest.builder()
+                .messages(messages)
+                .model("gpt-3.5-turbo")
+                .maxTokens(100)
+                .n(1)
+                .build();
+
+        return getOpenAiService().createChatCompletion(chatRequest).getChoices().stream()
+                .findFirst()
+                .map(ChatCompletionChoice::getMessage)
+                .map(ChatMessage::getContent);
     }
 }
