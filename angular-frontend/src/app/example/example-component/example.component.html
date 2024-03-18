@@ -4,6 +4,11 @@
     <h2>Message of the day: {{ motdDto?.content }}</h2>
     <img [src]="motdDto?.imageUrl" alt="A cat engineering software."/>
     <styled-button (click)="loadExamples()">Refresh</styled-button>
+
+    <chat-component />
+    <div class="card flex justify-content-center">
+      <p-button label="Get meal plan" icon="pi pi-send"></p-button>
+    </div>
   }
   @else {
     <loading-page></loading-page>

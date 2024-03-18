@@ -45,17 +45,17 @@ export class ExampleComponent implements OnInit, OnDestroy {
     this.isLoading = true;
 
     const data = await firstValueFrom(forkJoin({
-      exampleDto: this.remoteService.get<ExampleDto>(''),
-      motdDto: this.remoteService.get<MotdDto>('motd')
+      exampleDto: this.remoteService.get<ExampleDto>(""),
+      // motdDto: this.remoteService.get<MotdDto>("motd")
     }));
 
     if (data.exampleDto) {
       this.exampleDto = data.exampleDto;
     }
 
-    if (data.motdDto) {
+/*    if (data.motdDto) {
       this.motdDto = data.motdDto;
-    }
+    } */
 
     this.isLoading = false;
   }
