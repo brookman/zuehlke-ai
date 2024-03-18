@@ -16,6 +16,9 @@ import java.util.Optional;
 @Service
 public class AiService {
 
+    private final String SYSTEM_PROMPT = "Given a user request, respond with a JSON object specifying the 'action' to be taken. Available actions are 'turn_light_on', 'turn_light_off', and 'get_bistro_menu'. If requesting a bistro menu, also include the 'day'. Example response: {'action': 'get_bistro_menu', 'day': 'Monday'}";
+
+
     @Value("${app.openapi.key}")
     private String apiKey;
 
@@ -59,8 +62,14 @@ public class AiService {
     }
 
     public Optional<String> submit(String input) {
+        ChatMessage promptFormat = new ChatMessage(ChatMessageRole.USER.value(), SYSTEM_PROMPT);
+        ChatMessage initialResponse = new ChatMessage(ChatMessageRole.ASSISTANT.value(), "Okay, from now on I will always respond in your requested format.");
         ChatMessage message = new ChatMessage(ChatMessageRole.USER.value(), input);
-        List<ChatMessage> messages = List.of(message);
+        List<ChatMessage> messages = List.of(
+                promptFormat,
+                initialResponse,
+                message);
+
         ChatCompletionRequest chatRequest = ChatCompletionRequest.builder()
                 .messages(messages)
                 .model("gpt-3.5-turbo")
