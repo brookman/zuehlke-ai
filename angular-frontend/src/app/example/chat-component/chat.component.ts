@@ -8,6 +8,7 @@ import {InputGroupModule} from "primeng/inputgroup";
 import {InputTextModule} from "primeng/inputtext";
 import {WebsocketService} from "../../shared/websocket-service/websocket.service";
 import {ChatService} from "../../shared/chat-service/chat.service";
+import {ButtonGroupModule} from "primeng/buttongroup";
 
 @Component({
   selector: 'chat-component',
@@ -19,7 +20,8 @@ import {ChatService} from "../../shared/chat-service/chat.service";
     InputIconModule,
     IconFieldModule,
     InputGroupModule,
-    InputTextModule
+    InputTextModule,
+    ButtonGroupModule
   ],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
@@ -44,6 +46,9 @@ export class ChatComponent implements OnInit, OnDestroy{
     if (promptControl) {
       this.chatService.sendMessage(promptControl.value);
     }
+  }
+
+  handleVoice() {
 
   }
 

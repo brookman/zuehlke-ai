@@ -4,22 +4,34 @@
       <div class="col-12" *ngFor="let message of chatMessages; let first = first">
         <div class="flex flex-column xl:flex-row xl:align-items-start p-4 gap-4"
              [ngClass]="{ 'border-top-1 surface-border': !first }">
-          <p-avatar label="{{ message.user.charAt(0) }}" styleClass="mr-2" size="xlarge" shape="circle"></p-avatar>
+          @if (message.waiting) {
+            <p-skeleton shape="circle" size="4rem" styleClass="mr-2"></p-skeleton>
+          } @else {
+            <p-avatar label="{{ message.user.charAt(0) }}" styleClass="mr-2" size="xlarge" shape="circle"></p-avatar>
+          }
+
           <div
-            class="flex flex-column sm:flex-row justify-content-between align-items-center xl:align-items-start flex-1 gap-4">
-            <div class="flex flex-column align-items-center sm:align-items-start gap-3">
+            class="flex justify-content-between w-full">
+            <div>
 
               @if (message.waiting) {
-                <i class="pi pi-spinner pi-spin"></i>
+                <p-skeleton width="20rem" height="2rem"></p-skeleton>
+               <!-- <i class="pi pi-spinner pi-spin"></i>-->
               } @else {
                 <div class="text-2xl font-bold text-900">
                   {{ message.message }}
                 </div>
               }
-
-              @if (message.imageUrl) {
-                <p-image [src]="message.imageUrl" alt="Image" width="250" [preview]="true"></p-image>
+            </div>
+            <div>
+              @if (message.waiting) {
+                <p-skeleton width="10rem" height="4rem"></p-skeleton>
+              } @else {
+                @if (message.imageUrl) {
+                  <p-image [src]="message.imageUrl" alt="Image" width="250" [preview]="true"></p-image>
+                }
               }
+
             </div>
           </div>
         </div>
