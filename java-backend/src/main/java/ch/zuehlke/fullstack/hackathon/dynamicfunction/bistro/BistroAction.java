@@ -20,32 +20,35 @@ import java.util.List;
 
 public class BistroAction implements Action {
 
+    private static final String ACTION = "bistro_action";
+    private static final String WEEKDAY = "weekday";
+
     @Override
     public boolean canHandle(String actionName) {
-        return actionName.equals("bistro_action");
+        return actionName.equals(ACTION);
     }
 
     @Override
     public ChatMessageWrapper execute(ChatFunctionCall functionCall) {
-        String weekday = functionCall.getArguments().get("weekday").asText();
+        String weekday = functionCall.getArguments().get(WEEKDAY).asText();
         boolean vegetarian = functionCall.getArguments().get("vegetarian").asBoolean();
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode response = mapper.createObjectNode();
-        response.put("weekday", weekday);
+        response.put(WEEKDAY, weekday);
         List<String> menusOfTheRequestedDay = getMenusByDay(weekday, vegetarian);
         response.put("food", menusOfTheRequestedDay.toString());
 
-        return new ChatMessageWrapper(new ChatMessage(ChatMessageRole.FUNCTION.value(), response.toString(), "bistro_action"), menusOfTheRequestedDay.get(0));
+        return new ChatMessageWrapper(new ChatMessage(ChatMessageRole.FUNCTION.value(), response.toString(), ACTION), menusOfTheRequestedDay.get(0));
     }
 
     @Override
     public ChatFunctionDynamic getFunction() {
         return ChatFunctionDynamic.builder()
-                .name("bistro_action")
+                .name(ACTION)
                 .description("Determine for which day of the week the user wants to know the menu. If it is not monday to friday, return unknown. If the user wants to know data related to a specific day (like today), determine the week day on your own")
                 .addProperty(ChatFunctionProperty.builder()
-                        .name("weekday")
+                        .name(WEEKDAY)
                         .type("string")
                         .description("The day of the week")
                         .enumValues(new HashSet<>(Arrays.stream(Weekday.values()).map(Weekday::name).toList()))

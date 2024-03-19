@@ -12,15 +12,14 @@ import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.ChatMessageRole;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Arrays;
-import java.util.HashSet;
-
 @Slf4j
 public class LightAction implements Action {
 
+    private static final String ACTION = "light_action";
+
     @Override
     public boolean canHandle(String actionName) {
-        return actionName.equals("light_action");
+        return actionName.equals(ACTION);
     }
 
     @Override
@@ -39,13 +38,13 @@ public class LightAction implements Action {
         ObjectNode response = mapper.createObjectNode();
         response.put("status", true);
 
-        return new ChatMessageWrapper(new  ChatMessage(ChatMessageRole.FUNCTION.value(), response.toString(), "light_action"), null);
+        return new ChatMessageWrapper(new  ChatMessage(ChatMessageRole.FUNCTION.value(), response.toString(), ACTION), null);
     }
 
     @Override
     public ChatFunctionDynamic getFunction() {
         return ChatFunctionDynamic.builder()
-                .name("light_action")
+                .name(ACTION)
                 .description("Determine if the light needs to be activated or deactivated")
                 .addProperty(ChatFunctionProperty.builder()
                         .name("light")
