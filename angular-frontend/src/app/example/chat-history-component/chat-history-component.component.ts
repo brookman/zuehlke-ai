@@ -8,7 +8,7 @@ import {ButtonModule} from "primeng/button";
 import {LoadingPageComponent} from "../../shared/loading-page/loading-page.component";
 import {AvatarModule} from 'primeng/avatar';
 import {ChatService} from "../../shared/chat-service/chat.service";
-import {Message} from '../model/Message';
+import {Message, MessageType} from '../model/Message';
 import {ImageModule} from "primeng/image";
 import {SkeletonModule} from "primeng/skeleton";
 
@@ -42,6 +42,8 @@ export class ChatHistoryComponentComponent implements OnInit {
   ngOnInit() {
     this.chatService.chat.subscribe(value => this.chatMessages = value);
   }
+
+  protected readonly MessageType = MessageType;
 }
 
 

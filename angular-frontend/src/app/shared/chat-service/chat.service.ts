@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable} from "rxjs";
 import {WebsocketService} from "../websocket-service/websocket.service";
-import {Message} from "../../example/model/Message";
+import {Message, MessageType} from "../../example/model/Message";
 
 @Injectable({
   providedIn: 'root'
@@ -30,12 +30,14 @@ export class ChatService {
     let currentMessages = this.subject.value;
     currentMessages.push({
       id: -1,
+      type: MessageType.REQUEST,
       user: 'You',
       waiting: false,
       message: message
     });
     currentMessages.push({
       id: -1,
+      type: MessageType.RESPONSE,
       user: 'Z',
       waiting: true,
       message: message
@@ -53,6 +55,7 @@ export class ChatService {
       currentMessages = currentMessages.filter(m => !m.waiting);
       currentMessages.push({
         id: id,
+        type: MessageType.RESPONSE,
         user: 'Zühlki assistant',
         waiting: false,
         message: message

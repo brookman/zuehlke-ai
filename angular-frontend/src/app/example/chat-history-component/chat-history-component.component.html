@@ -2,16 +2,16 @@
   <ng-template pTemplate="list" let-chatMessages>
     <div class="grid grid-nogutter">
       <div class="col-12" *ngFor="let message of chatMessages; let first = first">
-        <div class="flex flex-column xl:flex-row xl:align-items-start p-4 gap-4"
-             [ngClass]="{ 'border-top-1 surface-border': !first }">
+        <div class="flex flex-column xl:flex-row align-items-center p-4 gap-4 ml-8"
+             [ngClass]="{ 'border-top-1 surface-border': !first, 'ml-8': message.type === MessageType.RESPONSE }">
           @if (message.waiting) {
             <p-skeleton shape="circle" size="4rem" styleClass="mr-2"></p-skeleton>
           } @else {
-            <p-avatar label="{{ message.user.charAt(0) }}" styleClass="mr-2" size="xlarge" shape="circle"></p-avatar>
+            <p-avatar label="{{ message.user.charAt(0) }}" class="mr-2" [styleClass]="message.type === MessageType.RESPONSE ? 'bg-primary' : ''" size="xlarge" shape="circle"></p-avatar>
           }
 
           <div
-            class="flex justify-content-between w-full">
+            class="flex justify-content-between w-full align-items-center">
             <div>
 
               @if (message.waiting) {

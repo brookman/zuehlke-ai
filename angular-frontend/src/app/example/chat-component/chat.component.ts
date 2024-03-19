@@ -45,6 +45,7 @@ export class ChatComponent implements OnInit, OnDestroy{
 
     if (promptControl) {
       this.chatService.sendMessage(promptControl.value);
+      promptControl.setValue("")
     }
   }
 
