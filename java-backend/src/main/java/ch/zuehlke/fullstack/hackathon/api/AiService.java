@@ -20,6 +20,7 @@ import io.reactivex.Flowable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -143,7 +144,8 @@ public class AiService {
 
     public Optional<String> functionDynamic(String input) {
         ChatMessage message = new ChatMessage(ChatMessageRole.USER.value(), input);
-        List<ChatMessage> messages = List.of(message);
+        List<ChatMessage> messages = new ArrayList<>();
+        messages.add(message);
 
         var responseMessage = executeCall(messages);
 
@@ -169,15 +171,16 @@ public class AiService {
 
     private static JsonNode lightAction(String action) {
         LightSwitch lightSwitch = LightSwitch.getInstance();
-        if (action.equals("activate")) {
+        if (action.equals("ACTIVATE")) {
             lightSwitch.setStatus(true);
+            log.info("LightSwitch is now activated");
         } else {
             lightSwitch.setStatus(false);
+            log.info("LightSwitch is now deactivated");
         }
-        log.info("LightSwitch is now " + lightSwitch.isOn());
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode response = mapper.createObjectNode();
-        response.put("status", "true");
+        response.put("status", true);
         return response;
     }
 
@@ -196,7 +199,7 @@ public class AiService {
                 .builder()
                 .model("gpt-3.5-turbo-0613")
                 .messages(messages)
-                .functions(Collections.singletonList(function))
+                .functions(function)
                 .functionCall(ChatCompletionRequest.ChatCompletionRequestFunctionCall.of("auto"))
                 .n(1)
                 .maxTokens(100)

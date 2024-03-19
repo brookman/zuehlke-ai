@@ -5,10 +5,11 @@ import com.theokanning.openai.completion.chat.ChatFunctionProperty;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 public class ChatFunctionDynamicInitiator {
 
-    public static ChatFunctionDynamic getFunction() {
+    public static List<ChatFunctionDynamic> getFunction() {
         ChatFunctionDynamic lightFunction = ChatFunctionDynamic.builder()
                 .name("light_action")
                 .description("Determine if the light needs to be activated or deactivated")
@@ -21,7 +22,7 @@ public class ChatFunctionDynamicInitiator {
                         .build())
                 .build();
 
-        /*ChatFunctionDynamic bistroFunction = ChatFunctionDynamic.builder()
+        ChatFunctionDynamic bistroFunction = ChatFunctionDynamic.builder()
                 .name("bistro_action")
                 .description("Determine for which day of the week the user wants to know the menu. If it is not monday to friday, return unknown")
                 .addProperty(ChatFunctionProperty.builder()
@@ -31,8 +32,8 @@ public class ChatFunctionDynamicInitiator {
                         .enumValues(new HashSet<>(Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "UNKNOWN")))
                         .required(true)
                         .build())
-                .build();*/
+                .build();
 
-        return lightFunction;
+        return List.of(lightFunction, bistroFunction);
     }
 }

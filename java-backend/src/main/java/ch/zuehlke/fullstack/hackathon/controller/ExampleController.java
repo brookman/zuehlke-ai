@@ -2,6 +2,7 @@ package ch.zuehlke.fullstack.hackathon.controller;
 
 import ch.zuehlke.fullstack.hackathon.model.ExampleDto;
 import ch.zuehlke.fullstack.hackathon.model.MessageOfTheDayDto;
+import ch.zuehlke.fullstack.hackathon.model.SubmitResponseDto;
 import ch.zuehlke.fullstack.hackathon.service.ExampleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -21,15 +22,11 @@ public class ExampleController {
 
     private final ExampleService exampleService;
 
-    @Operation(summary = "Example demo DTO",
-            description = "This can be used to enrich swagger documentation")
-    @ApiResponse(responseCode = "200", description = "Successfully returned example")
-    @ApiResponse(responseCode = "500", description = "Something failed internally")
     @GetMapping("/")
-    public ResponseEntity<ExampleDto> getExample() {
-        ExampleDto result;
+    public ResponseEntity<SubmitResponseDto> getExample() {
+        SubmitResponseDto result;
         try {
-            result = this.exampleService.getExampleDto();
+            result = this.exampleService.submit_2("Was für Essen gibt es am Dienstag");
         } catch (Exception exception) {
             log.error("Example could not be fetched", exception);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -37,7 +34,7 @@ public class ExampleController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    @Operation(summary = "Example message of the day DTO",
+        @Operation(summary = "Example message of the day DTO",
             description = "This can be used to enrich swagger documentation")
     @ApiResponse(responseCode = "200", description = "Successfully returned example")
     @ApiResponse(responseCode = "500", description = "Something failed internally")

@@ -30,8 +30,8 @@ public class WebSocketHandler extends TextWebSocketHandler {
         var messageId = messageIds.getAndIncrement();
         try {
 
-            this.aiService.submitStreamed(message.getPayload()).subscribe(wsm -> {
-                session.sendMessage(buildPayload(messageId, wsm));
+            this.aiService.submitStreamed(message.getPayload()).subscribe(websocketMessage -> {
+                session.sendMessage(buildPayload(messageId, websocketMessage));
             });
         } catch (Exception exception) {
             String errorMessage = "Message of the day could not be fetched";
