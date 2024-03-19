@@ -11,15 +11,19 @@ export class ChatService {
   public subject: BehaviorSubject<Message[]> = new BehaviorSubject<Message[]>([]);
   public chat: Observable<Message[]> = this.subject.asObservable();
 
-    constructor(private websocketService: WebsocketService) {
+  constructor(private websocketService: WebsocketService) {
     this.websocketService.connect().subscribe(
-      (message: { messageId: number, chunk: string | null, imageUrl?: string }) => {
+      (message: { type: string }) => {
         console.log(message);
-        if (message.chunk ) {
-          this.buildMessage(message.messageId, message.chunk, message.imageUrl);
-        } else if (message.imageUrl) {
-          console.log(message.imageUrl);
-          this.addImage(message.messageId, message.imageUrl);
+        if (message.type === 'ChatMessageChunk') {
+          let chunk = message as unknown as { messageId: number, chunk: string };
+          this.buildMessage(chunk.messageId, chunk.chunk);
+        } else if (message.type === 'ChatMessageFinished') {
+          let finished = message as unknown as { messageId: number, imageUrl: string };
+          this.addImage(finished.messageId, finished.imageUrl);
+        } else if (message.type === 'Error') {
+          let error = message as unknown as { errorMessage: string };
+          console.error(error.errorMessage);
         }
       },
       err => {
@@ -47,7 +51,7 @@ export class ChatService {
     this.websocketService.sendMessage(message);
   }
 
-  buildMessage(id: number, message: string, url?: string) {
+  buildMessage(id: number, message: string) {
     let currentMessages = this.subject.value;
     let existingMessage = currentMessages.find((msg) => msg.id === id);
     if (existingMessage) {
