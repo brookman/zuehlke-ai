@@ -12,7 +12,7 @@ import {ChatHistoryComponentComponent} from "./chat-history-component/chat-histo
 @NgModule({
   declarations: [
     ExampleComponent,
-    OtherComponent
+    OtherComponent,
   ],
   imports: [
     CommonModule,

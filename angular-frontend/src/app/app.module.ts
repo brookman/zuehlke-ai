@@ -2,6 +2,7 @@ import { NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
+import { HttpClientModule } from '@angular/common/http';
 
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
@@ -18,7 +19,8 @@ import { MenuBarComponent } from "./shared/layout/menu-bar/menu-bar.component";
     BrowserAnimationsModule,
     ToastrModule.forRoot(),
     AppRoutingModule,
-    ExampleModule
+    ExampleModule,
+    HttpClientModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

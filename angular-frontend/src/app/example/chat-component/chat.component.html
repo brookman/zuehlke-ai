@@ -2,10 +2,14 @@
 
   <p-inputGroup>
     <input type="text" pInputText formControlName="prompt" placeholder="Hi Zühlkee ..." />
-    <button type="button" (click)="handleVoice()" pButton icon="pi pi-microphone" class="p-button-secondary" [disabled]="formGroup.invalid || isLoading" ></button>
+    @if (isRecording) {
+      <button type="button" (click)="stopRecording()" pButton icon="pi pi-stop-circle" class="p-button-danger" ></button>
+    } @else {
+      <button type="button" (click)="startRecording()" pButton icon="pi pi-microphone" class="p-button-secondary" ></button>
+    }
+
     <button type="submit" pButton [icon]="!isLoading ? 'pi pi-send' : 'pi pi-spin pi-spinner'" class="p-button-help" [disabled]="formGroup.invalid || isLoading"></button>
   </p-inputGroup>
 </form>
-
 
 
