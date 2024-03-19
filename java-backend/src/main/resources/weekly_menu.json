@@ -1,0 +1,62 @@
+[
+    {
+      "week_day": "MONDAY",
+      "menu_type": "Meat / Fish",
+      "name": "Lughanighe (CH), Ticino pork bratwurst with Onion sauce, Risotto, Cima di Rapa",
+      "ingredients": ["Lughanighe", "Ticino pork bratwurst", "onion", "rice", "Cima di Rapa"]
+    },
+    {
+      "week_day": "MONDAY",
+      "menu_type": "Vegetarian",
+      "name": "Oriental vegetable stir-fry, Chickpeas & Dried Fruits, Lemon Bulgur",
+      "ingredients": ["vegetables", "chickpeas", "dried fruits", "bulgur", "lemon"]
+    },
+    {
+      "week_day": "TUESDAY",
+      "menu_type": "Meat / Fish",
+      "name": "Indian Butterchicken (CH), Basmati rice, Colorful vegetables",
+      "ingredients": ["Butterchicken", "Basmati rice", "vegetables"]
+    },
+    {
+      "week_day": "TUESDAY",
+      "menu_type": "Vegetarian",
+      "name": "Napkin dumplings, Wild Mushroom Savoy Cabbage, Ragout, Herbs",
+      "ingredients": ["dumplings", "mushroom", "savoy cabbage", "herbs"]
+    },
+    {
+      "week_day": "WEDNESDAY",
+      "menu_type": "Meat / Fish",
+      "name": "Beef Meatballs (CH), Cranberry Sauce, Mashed potatoes, Carrots and cabbage vegetables",
+      "ingredients": ["Beef Meatballs", "cranberry", "potatoes", "carrots", "cabbage"]
+    },
+    {
+      "week_day": "WEDNESDAY",
+      "menu_type": "Vegetarian",
+      "name": "Tofu cubes Sweet&Sour, Wok vegetables, Rice noodles",
+      "ingredients": ["Tofu", "vegetables", "rice noodles"]
+    },
+    {
+      "week_day": "THURSDAY",
+      "menu_type": "Meat / Fish",
+      "name": "Pink roasted lamb rump (IR), Honey - Rosemary Sauce, Potato gratin, Courgette",
+      "ingredients": ["lamb rump", "honey", "rosemary", "potato", "courgette"]
+    },
+    {
+      "week_day": "THURSDAY",
+      "menu_type": "Vegetarian",
+      "name": "Spinach Feta Quiche, Tomato salsa, Roasted pine nuts, Lettuce",
+      "ingredients": ["spinach", "feta", "quiche", "tomato", "pine nuts", "lettuce"]
+    },
+    {
+      "week_day": "FRIDAY",
+      "menu_type": "Meat / Fish",
+      "name": "Pasta al salmone (NO), White Wine Sauce, Horseradish",
+      "ingredients": ["pasta", "salmon", "white wine", "horseradish"]
+    },
+    {
+      "week_day": "FRIDAY",
+      "menu_type": "Vegetarian",
+      "name": "Oats Carrot Biscuits, Guacamole, Fried pointed cabbage",
+      "ingredients": ["oats", "carrot", "biscuits", "avocado", "cabbage"]
+    }
+  ]
