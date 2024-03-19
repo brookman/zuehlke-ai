@@ -21,13 +21,19 @@ import java.util.List;
 public class BistroAction implements Action {
 
     @Override
+    public boolean canHandle(String actionName) {
+        return actionName.equals("bistro_action");
+    }
+
+    @Override
     public ChatMessageWrapper execute(ChatFunctionCall functionCall) {
         String weekday = functionCall.getArguments().get("weekday").asText();
+        boolean vegetarian = functionCall.getArguments().get("vegetarian").asBoolean();
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode response = mapper.createObjectNode();
         response.put("weekday", weekday);
-        List<String> menusOfTheRequestedDay = getMenusByDay(weekday);
+        List<String> menusOfTheRequestedDay = getMenusByDay(weekday, vegetarian);
         response.put("food", menusOfTheRequestedDay.toString());
 
         return new ChatMessageWrapper(new ChatMessage(ChatMessageRole.FUNCTION.value(), response.toString(), "bistro_action"), menusOfTheRequestedDay.get(0));
@@ -45,10 +51,16 @@ public class BistroAction implements Action {
                         .enumValues(new HashSet<>(Arrays.stream(Weekday.values()).map(Weekday::name).toList()))
                         .required(true)
                         .build())
+                .addProperty(ChatFunctionProperty.builder()
+                        .name("vegetarian")
+                        .type("boolean")
+                        .description("Either being true or false to decide if the vegetarian meal should be extracted or meat")
+                        .required(true)
+                        .build())
                 .build();
     }
 
-    private List<String> getMenusByDay(String weekday) {
+    private List<String> getMenusByDay(String weekday, boolean vegetarian) {
         List<MenuItem> weeklyMenu = new ArrayList<>();
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -56,7 +68,11 @@ public class BistroAction implements Action {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return weeklyMenu.stream().filter(menu -> menu.getWeek_day().equals(weekday)).map(MenuItem::getName).toList();
+        return weeklyMenu.stream()
+                .filter(menu -> menu.getWeek_day().equals(weekday))
+                .filter(menu -> !vegetarian || menu.getMenu_type().equals("Vegetarian"))
+                .map(menu -> menu.getMenu_type() + ": " + menu.getName() + ";")
+                .toList();
     }
 
     enum Weekday {

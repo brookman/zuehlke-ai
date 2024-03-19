@@ -19,11 +19,16 @@ import java.util.HashSet;
 public class LightAction implements Action {
 
     @Override
+    public boolean canHandle(String actionName) {
+        return actionName.equals("light_action");
+    }
+
+    @Override
     public ChatMessageWrapper execute(ChatFunctionCall functionCall) {
-        String action = functionCall.getArguments().get("light").asText();
+        boolean activate = functionCall.getArguments().get("light").asBoolean();
 
         LightSwitch lightSwitch = LightSwitch.getInstance();
-        if (action.equals("ACTIVATE")) {
+        if (activate) {
             lightSwitch.setStatus(true);
             log.info("LightSwitch is now activated");
         } else {
@@ -44,9 +49,8 @@ public class LightAction implements Action {
                 .description("Determine if the light needs to be activated or deactivated")
                 .addProperty(ChatFunctionProperty.builder()
                         .name("light")
-                        .type("string")
+                        .type("boolean")
                         .description("The value to either activate or deactivate")
-                        .enumValues(new HashSet<>(Arrays.asList("ACTIVATE", "DEACTIVATE")))
                         .required(true)
                         .build())
                 .build();

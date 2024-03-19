@@ -1,5 +1,6 @@
 package ch.zuehlke.fullstack.hackathon.api;
 
+import ch.zuehlke.fullstack.hackathon.api.model.ImageUrl;
 import ch.zuehlke.fullstack.hackathon.dynamicfunction.Action;
 import ch.zuehlke.fullstack.hackathon.dynamicfunction.ChatMessageWrapper;
 import ch.zuehlke.fullstack.hackathon.dynamicfunction.bistro.BistroAction;
@@ -47,6 +48,7 @@ public class AiService {
                 .responseFormat("url")
                 .n(1)
                 .build();
+        log.info("generating image...");
 
         return getOpenAiService().createImage(request).getData().stream()
                 .findFirst()
@@ -75,30 +77,23 @@ public class AiService {
         var request = createFunctionRequest(messages);
         var responseMessage = executeCall(request);
 
-        Optional<String> imgUrl = Optional.empty();
+        ImageUrl imageUrl = new ImageUrl();
 
         ChatFunctionCall functionCall = responseMessage.getFunctionCall();
         if (functionCall != null) {
-            if (functionCall.getName().equals("light_action")) {
-                var lightAction = new LightAction();
-                ChatMessageWrapper lightActionMessage = lightAction.execute(functionCall);
-                messages.add(lightActionMessage.chatMessage());
-                imgUrl = getImageByPrompt(lightActionMessage.imagePrompt());
-            } else if (functionCall.getName().equals("bistro_action")) {
-                var bistroAction = new BistroAction();
-                ChatMessageWrapper bistroActionMessage = bistroAction.execute(functionCall);
-                messages.add(bistroActionMessage.chatMessage());
-                imgUrl = getImageByPrompt(bistroActionMessage.imagePrompt());
-            }
+            ActionFactory.getAction(functionCall.getName()).ifPresent(action -> {
+                ChatMessageWrapper actionMessage = action.execute(functionCall);
+                messages.add(actionMessage.chatMessage());
+                var prompt = getImageByPrompt(actionMessage.imagePrompt());
+                prompt.ifPresent(s -> imageUrl.setValue(s));
+            });
         }
-
-
 
         var chatRequest = createFunctionRequest(messages);
         var flowable = getOpenAiService().streamChatCompletion(chatRequest);
         checkFlowableNotNull(flowable);
 
-        return createWebsocketMessageFlowable(flowable, imgUrl);
+        return createWebsocketMessageFlowable(flowable, imageUrl.getValue());
     }
 
     private Flowable<WebsocketMessage> createWebsocketMessageFlowable(Flowable<ChatCompletionChunk> flowable, Optional<String> imgUrl) {
