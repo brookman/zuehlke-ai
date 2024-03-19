@@ -466,3 +466,5 @@ java-backend/src/main/resources/secrets.properties
 
 ## Ignore run files
 .run/
+
+angular-frontend/src/environments/environment.ts
