@@ -11,14 +11,15 @@ export class ChatService {
   public subject: BehaviorSubject<Message[]> = new BehaviorSubject<Message[]>([]);
   public chat: Observable<Message[]> = this.subject.asObservable();
 
-  constructor(private websocketService: WebsocketService) {
+    constructor(private websocketService: WebsocketService) {
     this.websocketService.connect().subscribe(
-      (message: { messageId: number, chunk: string | null, imgUrl?: string }) => {
+      (message: { messageId: number, chunk: string | null, imageUrl?: string }) => {
+        console.log(message);
         if (message.chunk !== null) {
-          this.buildMessage(message.messageId, message.chunk, message.imgUrl);
-        } else if (message.imgUrl) {
-          console.log(message.imgUrl);
-          this.addImage(message.messageId, message.imgUrl);
+          this.buildMessage(message.messageId, message.chunk, message.imageUrl);
+        } else if (message.imageUrl) {
+          console.log(message.imageUrl);
+          this.addImage(message.messageId, message.imageUrl);
         }
       },
       err => {
