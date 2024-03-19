@@ -10,6 +10,7 @@ import {WebsocketService} from "../../shared/websocket-service/websocket.service
 import {ChatService} from "../../shared/chat-service/chat.service";
 import {ButtonGroupModule} from "primeng/buttongroup";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {environment} from '../../../environments/environment';
 
 
 @Component({
@@ -28,7 +29,7 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
 })
-export class ChatComponent implements OnInit, OnDestroy{
+export class ChatComponent implements OnInit, OnDestroy {
 
   formGroup!: FormGroup;
   public isLoading = false;
@@ -37,6 +38,9 @@ export class ChatComponent implements OnInit, OnDestroy{
   mediaRecorder!: MediaRecorder;
   audioChunks: Blob[] = [];
   transcription = '';
+
+  private hfApiEndpoint = environment.hfApiEndpoint;
+  private hfApiToken = environment.hfApiToken;
 
   constructor(private chatService: ChatService, private http: HttpClient) {
   }
@@ -52,24 +56,36 @@ export class ChatComponent implements OnInit, OnDestroy{
 
     if (promptControl) {
       this.chatService.sendMessage(promptControl.value);
-      promptControl.setValue("")
+    }
+
+    this.setInputValue("");
+  }
+
+  setInputValue(message: string) {
+    const promptControl = this.formGroup.get('prompt');
+    if (promptControl) {
+      promptControl.setValue(message)
     }
   }
 
   async startRecording() {
     this.isRecording = true;
     this.audioChunks = [];
+    this.setInputValue("");
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({audio: true});
       this.mediaRecorder = new MediaRecorder(stream);
       this.mediaRecorder.ondataavailable = (event) => {
         this.audioChunks.push(event.data);
       };
       this.mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(this.audioChunks, { type: 'audio/flac' });
+        const audioBlob = new Blob(this.audioChunks, {type: 'audio/flac'});
         // Convert Blob to File if necessary
-        const audioFile = new File([audioBlob], "filename.flac", { type: 'audio/flac' });
+        const audioFile = new File([audioBlob], "filename.flac", {type: 'audio/flac'});
         this.transcription = await this.sendAudioToAPI(audioFile);
+
+        const promptControl = this.formGroup.get('prompt');
+        this.setInputValue(this.transcription);
         console.log(this.transcription); // Log the transcription to verify it works
       };
       this.mediaRecorder.start();
@@ -86,10 +102,10 @@ export class ChatComponent implements OnInit, OnDestroy{
   async sendAudioToAPI(file: Blob): Promise<string> {
     try {
       const headers = new HttpHeaders({
-        'Authorization': 'Bearer YOUR_API_TOKEN',
+        'Authorization': 'Bearer '.concat(this.hfApiToken),
         'Accept': 'application/json',
       });
-      const response = await this.http.post('YOUR_API_ENDPOINT', file, { headers, responseType: 'json' }).toPromise();
+      const response = await this.http.post(this.hfApiEndpoint, file, {headers, responseType: 'json'}).toPromise();
 
       // Assuming the API returns a JSON object with a "text" property
       if (response && typeof response === 'object' && 'text' in response) {
