@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, signal} from '@angular/core';
 import {DataViewModule} from 'primeng/dataview';
 import {RatingModule} from "primeng/rating";
 import {NgClass, NgForOf, NgOptimizedImage} from "@angular/common";
@@ -7,6 +7,8 @@ import {TagModule} from "primeng/tag";
 import {ButtonModule} from "primeng/button";
 import {LoadingPageComponent} from "../../shared/loading-page/loading-page.component";
 import { AvatarModule } from 'primeng/avatar';
+import {WebsocketService} from "../../shared/websocket-service/websocket.service";
+import {takeUntil} from "rxjs";
 
 @Component({
   selector: 'chat-history-component',
@@ -27,21 +29,60 @@ import { AvatarModule } from 'primeng/avatar';
   styleUrl: './chat-history-component.component.scss'
 })
 export class ChatHistoryComponentComponent implements OnInit {
+  private currentMessageChunks = "";
+  messages = signal<Message[]>([]);
 
-  public chatMessages: {
-    user: string,
-    waiting: boolean
-    message?: string
-  }[] = [{user: 'You', waiting: false, message: 'Switch on the lights please'}, {
-    user: 'Zühlki assistant',
-    waiting: true,
-    message: 'Certainly my friend. There will be light!'
-  }];
 
-  async ngOnInit(): Promise<void> {
-    setTimeout(() => {
-      this.chatMessages[this.chatMessages.length - 1].waiting = false;
-    }, 3000);
+
+  constructor(private websocketService: WebsocketService) {
+  }
+
+  public chatMessages: Message[] = [];
+
+  ngOnInit() {
+
+    this.websocketService.connect().subscribe(
+      (message: { messageId: number, chunk: string | null, url?: string }) => {
+        if(message.chunk !== null) {
+          this.buildMessage(message.messageId, message.chunk)
+        }
+      },
+      err => {
+        console.error('Error receiving WebSocket message:', err);
+      }
+    )
+  }
+
+  handleClick() {
+    this.chatMessages[this.chatMessages.length - 1].message = "Neuer Text";
+  }
+
+  buildMessage(id: number, message: string) {
+    let existingMessage = this.chatMessages.find((msg) => msg.id === id);
+    if(existingMessage) {
+      existingMessage.message += message;
+    } else {
+      this.chatMessages.push({
+        id: id,
+        user: 'Zühlki assistant',
+        waiting: false,
+        message: message
+      });
+    }
   }
 }
+
+interface Message {
+  id: number,
+  user: string,
+  waiting: boolean,
+  message?: string
+}
+
+
+
+
+
+
+
 

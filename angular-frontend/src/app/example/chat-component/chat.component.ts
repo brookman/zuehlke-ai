@@ -32,7 +32,6 @@ export class ChatComponent implements OnInit, OnDestroy{
   }
 
   ngOnInit() {
-    this.websocketService.connect();
     this.formGroup = new FormGroup({
       prompt: new FormControl<string | null>({value: '', disabled: false}, Validators.required)
     });
@@ -42,15 +41,9 @@ export class ChatComponent implements OnInit, OnDestroy{
     const promptControl = this.formGroup.get('prompt');
 
     if (promptControl) {
-      this.connectWebsocket(promptControl.value).then(value => {
-        console.log('Message sent');
-      });
+      this.websocketService.sendMessage(promptControl.value);
     }
 
-  }
-
-  public async connectWebsocket(message: string): Promise<void> {
-    this.websocketService.sendMessage(message);
   }
 
   ngOnDestroy() {
