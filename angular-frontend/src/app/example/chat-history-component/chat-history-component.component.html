@@ -1,6 +1,5 @@
 <p-dataView #dv [value]="chatMessages">
-  <ng-template pTemplate="list">
-    <button (click)="handleClick()">Clicke me</button>
+  <ng-template pTemplate="list" let-chatMessages>
     <div class="grid grid-nogutter">
       <div class="col-12" *ngFor="let message of chatMessages; let first = first">
         <div class="flex flex-column xl:flex-row xl:align-items-start p-4 gap-4"

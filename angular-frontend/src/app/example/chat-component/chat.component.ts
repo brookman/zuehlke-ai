@@ -7,6 +7,7 @@ import {IconFieldModule} from "primeng/iconfield";
 import {InputGroupModule} from "primeng/inputgroup";
 import {InputTextModule} from "primeng/inputtext";
 import {WebsocketService} from "../../shared/websocket-service/websocket.service";
+import {ChatService} from "../../shared/chat-service/chat.service";
 
 @Component({
   selector: 'chat-component',
@@ -28,7 +29,7 @@ export class ChatComponent implements OnInit, OnDestroy{
   formGroup!: FormGroup;
   public isLoading = false;
 
-  constructor(private websocketService: WebsocketService) {
+  constructor(private chatService: ChatService) {
   }
 
   ngOnInit() {
@@ -41,12 +42,11 @@ export class ChatComponent implements OnInit, OnDestroy{
     const promptControl = this.formGroup.get('prompt');
 
     if (promptControl) {
-      this.websocketService.sendMessage(promptControl.value);
+      this.chatService.sendMessage(promptControl.value);
     }
 
   }
 
   ngOnDestroy() {
-    this.websocketService.disconnect();
   }
 }
