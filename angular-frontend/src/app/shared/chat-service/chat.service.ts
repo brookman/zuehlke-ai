@@ -15,7 +15,7 @@ export class ChatService {
     this.websocketService.connect().subscribe(
       (message: { messageId: number, chunk: string | null, imageUrl?: string }) => {
         console.log(message);
-        if (message.chunk !== null) {
+        if (message.chunk ) {
           this.buildMessage(message.messageId, message.chunk, message.imageUrl);
         } else if (message.imageUrl) {
           console.log(message.imageUrl);
