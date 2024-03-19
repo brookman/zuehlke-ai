@@ -36,10 +36,4 @@ public class ExampleService {
         Optional<String> content = aiService.submit(input);
         return new SubmitResponseDto(content.orElse("Could not get any message."));
     }
-
-    public SubmitResponseDto submit_2(String input) {
-        Optional<String> content = aiService.functionDynamic(input);
-        return new SubmitResponseDto(content.orElse("Could not get any message."));
-    }
-
 }

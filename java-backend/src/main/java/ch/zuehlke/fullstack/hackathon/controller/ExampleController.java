@@ -26,7 +26,7 @@ public class ExampleController {
     public ResponseEntity<SubmitResponseDto> getExample() {
         SubmitResponseDto result;
         try {
-            result = this.exampleService.submit_2("Was für Essen gibt es am Dienstag");
+            result = this.exampleService.submit("Was für Essen gibt es am Dienstag");
         } catch (Exception exception) {
             log.error("Example could not be fetched", exception);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

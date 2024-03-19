@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +29,8 @@ import java.util.Optional;
 @Slf4j
 public class AiService {
 
-    private final String SYSTEM_PROMPT = "Given a user request, respond with a JSON object specifying the 'action' to be taken. Available actions are 'turn_light_on', 'turn_light_off', and 'get_bistro_menu'. If requesting a bistro menu, also include the 'day'. Example response: {'action': 'get_bistro_menu', 'day': 'Monday'}. Values of your response are always in English. If the request does not match with any action, the action is UNKNOWN";
+    private static final String SYSTEM_PROMPT = "Given a user request, respond with a JSON object specifying the 'action' to be taken. Available actions are 'turn_light_on', 'turn_light_off', and 'get_bistro_menu'. If requesting a bistro menu, also include the 'day'. Example response: {'action': 'get_bistro_menu', 'day': 'Monday'}. Values of your response are always in English. If the request does not match with any action, the action is UNKNOWN";
+    private static final String GPT_MODEL = "gpt-3.5-turbo";
 
     @Value("${app.openapi.key}")
     private String apiKey;
@@ -42,7 +42,7 @@ public class AiService {
         List<ChatMessage> messages = List.of(message);
         ChatCompletionRequest chatRequest = ChatCompletionRequest.builder()
                 .messages(messages)
-                .model("gpt-3.5-turbo")
+                .model(GPT_MODEL)
                 .maxTokens(100)
                 .n(1)
                 .build();
@@ -107,17 +107,55 @@ public class AiService {
 
         ChatCompletionRequest chatRequest = ChatCompletionRequest.builder()
                 .messages(messages)
-                .model("gpt-3.5-turbo")
+                .model(GPT_MODEL)
                 .maxTokens(256)
                 .n(1)
                 .stream(true)
                 .build();
 
         var flowable = getOpenAiService().streamChatCompletion(chatRequest);
+        checkFlowableNotNull(flowable);
+
+        return createWebsocketMessageFlowable(flowable);
+    }
+
+    private void checkFlowableNotNull(Flowable<ChatCompletionChunk> flowable) {
         if (flowable == null) {
             throw new IllegalStateException("Flowable was null, indicating a problem with service setup.");
         }
+    }
 
+    public Flowable<WebsocketMessage> submitFunctionStreamed(String input) {
+        ChatMessage message = new ChatMessage(ChatMessageRole.USER.value(), input);
+        List<ChatMessage> messages = new ArrayList<>();
+        messages.add(message);
+
+        var request = createFunctionRequest(messages);
+        var responseMessage = executeCall(request);
+
+        ChatFunctionCall functionCall = responseMessage.getFunctionCall();
+        if (functionCall != null) {
+            if (functionCall.getName().equals("light_action")) {
+                String status = functionCall.getArguments().get("light").asText();
+                JsonNode jsonNode = lightAction(status);
+                ChatMessage lightActionMessage = new ChatMessage(ChatMessageRole.FUNCTION.value(), jsonNode.toString(), "light_action");
+                messages.add(lightActionMessage);
+            } else if (functionCall.getName().equals("bistro_action")) {
+                String weekday = functionCall.getArguments().get("weekday").asText();
+                JsonNode jsonNode = getBistroAction(weekday);
+                ChatMessage bistroMessage = new ChatMessage(ChatMessageRole.FUNCTION.value(), jsonNode.toString(), "bistro_action");
+                messages.add(bistroMessage);
+            }
+        }
+
+        var chatRequest = createFunctionRequest(messages);
+        var flowable = getOpenAiService().streamChatCompletion(chatRequest);
+        checkFlowableNotNull(flowable);
+
+        return createWebsocketMessageFlowable(flowable);
+    }
+
+    private Flowable<WebsocketMessage> createWebsocketMessageFlowable(Flowable<ChatCompletionChunk> flowable) {
         return Flowable.create(emitter -> {
             flowable.map(ChatCompletionChunk::getChoices)
                     .filter(choices -> !choices.isEmpty())
@@ -142,33 +180,6 @@ public class AiService {
         }, BackpressureStrategy.BUFFER);
     }
 
-    public Optional<String> functionDynamic(String input) {
-        ChatMessage message = new ChatMessage(ChatMessageRole.USER.value(), input);
-        List<ChatMessage> messages = new ArrayList<>();
-        messages.add(message);
-
-        var responseMessage = executeCall(messages);
-
-        ChatFunctionCall functionCall = responseMessage.getFunctionCall();
-        if (functionCall != null) {
-            if (functionCall.getName().equals("light_action")) {
-                String status = functionCall.getArguments().get("light").asText();
-                JsonNode jsonNode = lightAction(status);
-                ChatMessage lightActionMessage = new ChatMessage(ChatMessageRole.FUNCTION.value(), jsonNode.toString(), "light_action");
-                messages.add(lightActionMessage);
-            } else if (functionCall.getName().equals("bistro_action")) {
-                String weekday = functionCall.getArguments().get("weekday").asText();
-                JsonNode jsonNode = getBistroAction(weekday);
-                ChatMessage bistroMessage = new ChatMessage(ChatMessageRole.FUNCTION.value(), jsonNode.toString(), "bistro_action");
-                messages.add(bistroMessage);
-            }
-        }
-
-        var finalMessage = executeCall(messages);
-
-        return Optional.ofNullable(finalMessage.getContent());
-    }
-
     private static JsonNode lightAction(String action) {
         LightSwitch lightSwitch = LightSwitch.getInstance();
         if (action.equals("ACTIVATE")) {
@@ -188,25 +199,25 @@ public class AiService {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode response = mapper.createObjectNode();
         response.put("weekday", weekday);
-        response.put("food", "Pizza von Dieci");
+        response.put("food", "Pizza von Dieci"); //TODO read data from DB(?) by weekday
         return response;
     }
 
-    private ChatMessage executeCall(List<ChatMessage> messages) {
-        var function = ChatFunctionDynamicInitiator.getFunction();
+    private ChatMessage executeCall(ChatCompletionRequest request) {
+        return getOpenAiService().createChatCompletion(request).getChoices().get(0).getMessage();
+    }
 
-        ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
+    private ChatCompletionRequest createFunctionRequest(List<ChatMessage> messages) {
+        return ChatCompletionRequest
                 .builder()
-                .model("gpt-3.5-turbo-0613")
+                .model(GPT_MODEL)
                 .messages(messages)
-                .functions(function)
+                .functions(ChatFunctionDynamicInitiator.getFunction())
                 .functionCall(ChatCompletionRequest.ChatCompletionRequestFunctionCall.of("auto"))
                 .n(1)
-                .maxTokens(100)
+                .maxTokens(256)
                 .logitBias(new HashMap<>())
                 .build();
-
-        return getOpenAiService().createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
     }
 
 }

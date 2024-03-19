@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class WebSocketHandler extends TextWebSocketHandler {
 
-    private final ExampleService exampleService;
     private final AiService aiService;
 
     private final AtomicInteger messageIds = new AtomicInteger();
@@ -29,8 +28,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
     public void handleTextMessage(@NotNull WebSocketSession session, TextMessage message) throws IOException {
         var messageId = messageIds.getAndIncrement();
         try {
-
-            this.aiService.submitStreamed(message.getPayload()).subscribe(websocketMessage -> {
+            this.aiService.submitFunctionStreamed(message.getPayload()).subscribe(websocketMessage -> {
                 session.sendMessage(buildPayload(messageId, websocketMessage));
             });
         } catch (Exception exception) {
@@ -42,9 +40,13 @@ public class WebSocketHandler extends TextWebSocketHandler {
 
     private TextMessage buildPayload(int messageId, WebsocketMessage websocketMessage) {
         if (websocketMessage.endMessage()) {
-            return new TextMessage("{ \"messageId\": " + messageId + ", \"chunk\": " + websocketMessage.content() + " }");
+            var response = "{ \"messageId\": " + messageId + ", \"chunk\": " + websocketMessage.content() + " }";
+            log.info(response);
+            return new TextMessage(response);
         }
-        return new TextMessage("{ \"messageId\": " + messageId + ", \"chunk\": \"" + websocketMessage.content() + "\" }");
+        var response = "{ \"messageId\": " + messageId + ", \"chunk\": \"" + websocketMessage.content() + "\" }";
+        log.info(response);
+        return new TextMessage(response);
     }
 
     @Override
