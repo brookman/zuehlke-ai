@@ -7,6 +7,7 @@ import {IconFieldModule} from "primeng/iconfield";
 import {InputGroupModule} from "primeng/inputgroup";
 import {InputTextModule} from "primeng/inputtext";
 import {WebsocketService} from "../../shared/websocket-service/websocket.service";
+import {ChatService} from "../../shared/chat-service/chat.service";
 
 @Component({
   selector: 'chat-component',
@@ -28,11 +29,10 @@ export class ChatComponent implements OnInit, OnDestroy{
   formGroup!: FormGroup;
   public isLoading = false;
 
-  constructor(private websocketService: WebsocketService) {
+  constructor(private chatService: ChatService) {
   }
 
   ngOnInit() {
-    this.websocketService.connect();
     this.formGroup = new FormGroup({
       prompt: new FormControl<string | null>({value: '', disabled: false}, Validators.required)
     });
@@ -42,18 +42,11 @@ export class ChatComponent implements OnInit, OnDestroy{
     const promptControl = this.formGroup.get('prompt');
 
     if (promptControl) {
-      this.connectWebsocket(promptControl.value).then(value => {
-        console.log('Message sent');
-      });
+      this.chatService.sendMessage(promptControl.value);
     }
 
   }
 
-  public async connectWebsocket(message: string): Promise<void> {
-    this.websocketService.sendMessage(message);
-  }
-
   ngOnDestroy() {
-    this.websocketService.disconnect();
   }
 }
