@@ -1,6 +1,5 @@
 package ch.zuehlke.fullstack.hackathon.dynamicfunction.bistro;
 
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

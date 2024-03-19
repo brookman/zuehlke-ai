@@ -7,7 +7,7 @@ import com.theokanning.openai.completion.chat.ChatMessage;
 
 public interface Action {
 
-    ChatMessage execute(ChatFunctionCall functionCall);
+    ChatMessageWrapper execute(ChatFunctionCall functionCall);
     ChatFunctionDynamic getFunction();
 
 }

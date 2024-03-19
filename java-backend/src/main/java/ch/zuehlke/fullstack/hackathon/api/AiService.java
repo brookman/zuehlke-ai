@@ -1,6 +1,7 @@
 package ch.zuehlke.fullstack.hackathon.api;
 
 import ch.zuehlke.fullstack.hackathon.dynamicfunction.Action;
+import ch.zuehlke.fullstack.hackathon.dynamicfunction.ChatMessageWrapper;
 import ch.zuehlke.fullstack.hackathon.dynamicfunction.bistro.BistroAction;
 import ch.zuehlke.fullstack.hackathon.dynamicfunction.light.LightAction;
 import ch.zuehlke.fullstack.hackathon.websocket.WebsocketMessage;
@@ -35,10 +36,14 @@ public class AiService {
 
     private OpenAiService openAiService;
 
-    public Optional<String> getCatImageUrl() {
+    public Optional<String> getImageByPrompt(String prompt) {
+        if (prompt == null) {
+            return Optional.empty();
+        }
+
         CreateImageRequest request = CreateImageRequest.builder()
-                .prompt("Draw an image of a cat engineering software.")
-                .size("512x512")
+                .prompt("Create a photorealistic image of " + prompt)
+                .size("256x256")
                 .responseFormat("url")
                 .n(1)
                 .build();
@@ -70,27 +75,33 @@ public class AiService {
         var request = createFunctionRequest(messages);
         var responseMessage = executeCall(request);
 
+        Optional<String> imgUrl = Optional.empty();
+
         ChatFunctionCall functionCall = responseMessage.getFunctionCall();
         if (functionCall != null) {
             if (functionCall.getName().equals("light_action")) {
                 var lightAction = new LightAction();
-                ChatMessage lightActionMessage = lightAction.execute(functionCall);
-                messages.add(lightActionMessage);
+                ChatMessageWrapper lightActionMessage = lightAction.execute(functionCall);
+                messages.add(lightActionMessage.chatMessage());
+                imgUrl = getImageByPrompt(lightActionMessage.imagePrompt());
             } else if (functionCall.getName().equals("bistro_action")) {
                 var bistroAction = new BistroAction();
-                ChatMessage bistroMessage = bistroAction.execute(functionCall);
-                messages.add(bistroMessage);
+                ChatMessageWrapper bistroActionMessage = bistroAction.execute(functionCall);
+                messages.add(bistroActionMessage.chatMessage());
+                imgUrl = getImageByPrompt(bistroActionMessage.imagePrompt());
             }
         }
+
+
 
         var chatRequest = createFunctionRequest(messages);
         var flowable = getOpenAiService().streamChatCompletion(chatRequest);
         checkFlowableNotNull(flowable);
 
-        return createWebsocketMessageFlowable(flowable);
+        return createWebsocketMessageFlowable(flowable, imgUrl);
     }
 
-    private Flowable<WebsocketMessage> createWebsocketMessageFlowable(Flowable<ChatCompletionChunk> flowable) {
+    private Flowable<WebsocketMessage> createWebsocketMessageFlowable(Flowable<ChatCompletionChunk> flowable, Optional<String> imgUrl) {
         return Flowable.create(emitter -> {
             flowable.map(ChatCompletionChunk::getChoices)
                     .filter(choices -> !choices.isEmpty())
@@ -98,17 +109,17 @@ public class AiService {
                     .subscribe(choice -> {
                         var m = choice.getMessage();
                         if (m == null) {
-                            emitter.onNext(new WebsocketMessage(null, true)); // Send end signal
+                            emitter.onNext(new WebsocketMessage(null, imgUrl.orElse(null), true)); // Send end signal
                             emitter.onComplete();
                             return;
                         }
                         var c = m.getContent();
                         if (c == null) {
-                            emitter.onNext(new WebsocketMessage(null, true)); // Send end signal
+                            emitter.onNext(new WebsocketMessage(null, imgUrl.orElse(null), true)); // Send end signal
                             emitter.onComplete();
                             return;
                         }
-                        emitter.onNext(new WebsocketMessage(c, false));
+                        emitter.onNext(new WebsocketMessage(c, null, false));
 
 
                     });

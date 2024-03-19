@@ -1,6 +1,7 @@
 package ch.zuehlke.fullstack.hackathon.dynamicfunction.bistro;
 
 import ch.zuehlke.fullstack.hackathon.dynamicfunction.Action;
+import ch.zuehlke.fullstack.hackathon.dynamicfunction.ChatMessageWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -20,32 +21,34 @@ import java.util.List;
 public class BistroAction implements Action {
 
     @Override
-    public ChatMessage execute(ChatFunctionCall functionCall) {
+    public ChatMessageWrapper execute(ChatFunctionCall functionCall) {
         String weekday = functionCall.getArguments().get("weekday").asText();
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode response = mapper.createObjectNode();
         response.put("weekday", weekday);
-        response.put("food", getMenusByDay(weekday).toString());
-        return new ChatMessage(ChatMessageRole.FUNCTION.value(), response.toString(), "bistro_action");
+        List<String> menusOfTheRequestedDay = getMenusByDay(weekday);
+        response.put("food", menusOfTheRequestedDay.toString());
+
+        return new ChatMessageWrapper(new ChatMessage(ChatMessageRole.FUNCTION.value(), response.toString(), "bistro_action"), menusOfTheRequestedDay.get(0));
     }
 
     @Override
     public ChatFunctionDynamic getFunction() {
         return ChatFunctionDynamic.builder()
                 .name("bistro_action")
-                .description("Determine for which day of the week the user wants to know the menu. If it is not monday to friday, return unknown")
+                .description("Determine for which day of the week the user wants to know the menu. If it is not monday to friday, return unknown. If the user wants to know data related to a specific day (like today), determine the week day on your own")
                 .addProperty(ChatFunctionProperty.builder()
                         .name("weekday")
                         .type("string")
                         .description("The day of the week")
-                        .enumValues(new HashSet<>(Arrays.asList("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "UNKNOWN")))
+                        .enumValues(new HashSet<>(Arrays.stream(Weekday.values()).map(Weekday::name).toList()))
                         .required(true)
                         .build())
                 .build();
     }
 
-    private List<MenuItem> getMenusByDay(String weekday) {
+    private List<String> getMenusByDay(String weekday) {
         List<MenuItem> weeklyMenu = new ArrayList<>();
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -53,6 +56,15 @@ public class BistroAction implements Action {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return weeklyMenu.stream().filter(menu -> menu.getWeek_day().equals(weekday)).toList();
+        return weeklyMenu.stream().filter(menu -> menu.getWeek_day().equals(weekday)).map(MenuItem::getName).toList();
+    }
+
+    enum Weekday {
+        MONDAY,
+        TUESDAY,
+        WEDNESDAY,
+        THURSDAY,
+        FRIDAY,
+        UNKNOWN
     }
 }

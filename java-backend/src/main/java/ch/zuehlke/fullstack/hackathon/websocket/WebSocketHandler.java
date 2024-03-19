@@ -41,7 +41,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
 
     private MessageDto buildPayload(int messageId, WebsocketMessage websocketMessage) {
         if (websocketMessage.endMessage()) {
-            String imgUrl = "https://www.foodandwine.com/thmb/Wd4lBRZz3X_8qBr69UOu2m7I2iw=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/classic-cheese-pizza-FT-RECIPE0422-31a2c938fc2546c9a07b7011658cfd05.jpg";
+            String imgUrl = websocketMessage.imgUrl();
             var response = new MessageDto.ChatMessageFinished(messageId, imgUrl);
             log.info(response.toString());
             return response;

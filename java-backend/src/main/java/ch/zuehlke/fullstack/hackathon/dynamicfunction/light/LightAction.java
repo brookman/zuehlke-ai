@@ -1,6 +1,7 @@
 package ch.zuehlke.fullstack.hackathon.dynamicfunction.light;
 
 import ch.zuehlke.fullstack.hackathon.dynamicfunction.Action;
+import ch.zuehlke.fullstack.hackathon.dynamicfunction.ChatMessageWrapper;
 import ch.zuehlke.fullstack.hackathon.dynamicfunction.light.model.LightSwitch;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -18,7 +19,7 @@ import java.util.HashSet;
 public class LightAction implements Action {
 
     @Override
-    public ChatMessage execute(ChatFunctionCall functionCall) {
+    public ChatMessageWrapper execute(ChatFunctionCall functionCall) {
         String action = functionCall.getArguments().get("light").asText();
 
         LightSwitch lightSwitch = LightSwitch.getInstance();
@@ -33,7 +34,7 @@ public class LightAction implements Action {
         ObjectNode response = mapper.createObjectNode();
         response.put("status", true);
 
-        return new ChatMessage(ChatMessageRole.FUNCTION.value(), response.toString(), "light_action");
+        return new ChatMessageWrapper(new  ChatMessage(ChatMessageRole.FUNCTION.value(), response.toString(), "light_action"), null);
     }
 
     @Override
