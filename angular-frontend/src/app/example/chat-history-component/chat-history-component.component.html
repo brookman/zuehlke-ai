@@ -16,20 +16,17 @@
 
               @if (message.waiting) {
                 <p-skeleton width="20rem" height="2rem"></p-skeleton>
-               <!-- <i class="pi pi-spinner pi-spin"></i>-->
               } @else {
                 <div class="text-2xl font-bold text-900">
-                  <pre>{{ message.message }}</pre>
+                  <pre class="pre-wrap">{{ message.message }}</pre>
                 </div>
               }
             </div>
             <div>
               @if (message.waiting) {
                 <p-skeleton width="10rem" height="4rem"></p-skeleton>
-              } @else {
-                @if (message.imageUrl) {
-                  <p-image [src]="message.imageUrl" alt="Image" width="250" [preview]="true"></p-image>
-                }
+              } @else if(message.imageUrl){
+                <p-image [src]="message.imageUrl" alt="Image" width="250" [preview]="true"></p-image>
               }
 
             </div>
