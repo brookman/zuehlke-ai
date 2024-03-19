@@ -3,4 +3,5 @@ export interface Message {
   user: string,
   waiting: boolean,
   message?: string
+  imageUrl?: string
 }

@@ -13,9 +13,12 @@ export class ChatService {
 
   constructor(private websocketService: WebsocketService) {
     this.websocketService.connect().subscribe(
-      (message: { messageId: number, chunk: string | null, url?: string }) => {
+      (message: { messageId: number, chunk: string | null, imgUrl?: string }) => {
         if (message.chunk !== null) {
-          this.buildMessage(message.messageId, message.chunk)
+          this.buildMessage(message.messageId, message.chunk, message.imgUrl);
+        } else if (message.imgUrl) {
+          console.log(message.imgUrl);
+          this.addImage(message.messageId, message.imgUrl);
         }
       },
       err => {
@@ -41,7 +44,7 @@ export class ChatService {
     this.websocketService.sendMessage(message);
   }
 
-  buildMessage(id: number, message: string) {
+  buildMessage(id: number, message: string, url?: string) {
     let currentMessages = this.subject.value;
     let existingMessage = currentMessages.find((msg) => msg.id === id);
     if (existingMessage) {
@@ -56,5 +59,14 @@ export class ChatService {
       });
     }
     this.subject.next(currentMessages);
+  }
+
+  addImage(id: number, imageUrl: string) {
+    let currentMessages = this.subject.value;
+    let existingMessage = currentMessages.find((msg) => msg.id === id);
+    if (existingMessage) {
+      existingMessage.imageUrl = imageUrl;
+      this.subject.next(currentMessages);
+    }
   }
 }

@@ -17,6 +17,9 @@
                 </div>
               }
 
+              @if (message.imageUrl) {
+                <p-image [src]="message.imageUrl" alt="Image" width="250" [preview]="true"></p-image>
+              }
             </div>
           </div>
         </div>

@@ -9,6 +9,7 @@ import {LoadingPageComponent} from "../../shared/loading-page/loading-page.compo
 import {AvatarModule} from 'primeng/avatar';
 import {ChatService} from "../../shared/chat-service/chat.service";
 import {Message} from '../model/Message';
+import {ImageModule} from "primeng/image";
 
 @Component({
   selector: 'chat-history-component',
@@ -23,7 +24,8 @@ import {Message} from '../model/Message';
     NgOptimizedImage,
     NgForOf,
     LoadingPageComponent,
-    AvatarModule
+    AvatarModule,
+    ImageModule
   ],
   templateUrl: './chat-history-component.component.html',
   styleUrl: './chat-history-component.component.scss'
