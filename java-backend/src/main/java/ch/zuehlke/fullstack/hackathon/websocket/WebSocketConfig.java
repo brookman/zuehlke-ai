@@ -1,7 +1,6 @@
 package ch.zuehlke.fullstack.hackathon.websocket;
 
 import ch.zuehlke.fullstack.hackathon.api.AiService;
-import ch.zuehlke.fullstack.hackathon.service.ExampleService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.server.ServerHttpRequest;

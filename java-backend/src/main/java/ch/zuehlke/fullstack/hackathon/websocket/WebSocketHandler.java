@@ -1,7 +1,6 @@
 package ch.zuehlke.fullstack.hackathon.websocket;
 
 import ch.zuehlke.fullstack.hackathon.api.AiService;
-import ch.zuehlke.fullstack.hackathon.service.ExampleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;

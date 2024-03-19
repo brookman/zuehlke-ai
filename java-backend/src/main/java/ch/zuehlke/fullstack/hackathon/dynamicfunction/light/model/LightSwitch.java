@@ -1,4 +1,4 @@
-package ch.zuehlke.fullstack.hackathon.api.light;
+package ch.zuehlke.fullstack.hackathon.dynamicfunction.light.model;
 
 public class LightSwitch {
     private static LightSwitch instance;
@@ -18,10 +18,6 @@ public class LightSwitch {
 
     public void setStatus(boolean value) {
         isOn = value;
-    }
-
-    public boolean isOn() {
-        return isOn;
     }
 }
 
