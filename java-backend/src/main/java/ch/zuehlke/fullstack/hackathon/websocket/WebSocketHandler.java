@@ -27,17 +27,24 @@ public class WebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void handleTextMessage(@NotNull WebSocketSession session, TextMessage message) throws IOException {
+        var messageId = messageIds.getAndIncrement();
         try {
-            var messageId = messageIds.getAndIncrement();
 
-            this.aiService.submitStreamed(message.getPayload()).subscribe(s -> {
-                session.sendMessage(new TextMessage("{ \"messageId\": " + messageId + ", \"chunk\": \"" + s + "\" }"));
+            this.aiService.submitStreamed(message.getPayload()).subscribe(wsm -> {
+                session.sendMessage(buildPayload(messageId, wsm));
             });
         } catch (Exception exception) {
             String errorMessage = "Message of the day could not be fetched";
             log.error(errorMessage, exception);
             session.sendMessage(new TextMessage("\"" + errorMessage + "\""));
         }
+    }
+
+    private TextMessage buildPayload(int messageId, WebsocketMessage websocketMessage) {
+        if (websocketMessage.endMessage()) {
+            return new TextMessage("{ \"messageId\": " + messageId + ", \"chunk\": " + websocketMessage.content() + " }");
+        }
+        return new TextMessage("{ \"messageId\": " + messageId + ", \"chunk\": \"" + websocketMessage.content() + "\" }");
     }
 
     @Override
