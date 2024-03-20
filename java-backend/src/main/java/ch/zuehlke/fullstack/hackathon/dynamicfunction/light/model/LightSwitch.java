@@ -3,10 +3,10 @@ package ch.zuehlke.fullstack.hackathon.dynamicfunction.light.model;
 public class LightSwitch {
     private static LightSwitch instance;
 
-    private boolean isOn;
+    private boolean on;
 
     private LightSwitch() {
-        isOn = false;
+        on = false;
     }
 
     public static synchronized LightSwitch getInstance() {
@@ -17,7 +17,11 @@ public class LightSwitch {
     }
 
     public void setStatus(boolean value) {
-        isOn = value;
+        on = value;
+    }
+
+    public boolean isOn() {
+        return on;
     }
 }
 
