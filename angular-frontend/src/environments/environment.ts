@@ -5,7 +5,9 @@
 export const environment = {
   production: false,
   hfApiEndpoint: '',
-  hfApiToken: ''
+  hfApiToken: '',
+  openAiApiEndpoint: '',
+  openAiApiToken: ''
 };
 
 /*

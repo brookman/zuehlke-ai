@@ -45,6 +45,8 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   private hfApiEndpoint = environment.hfApiEndpoint;
   private hfApiToken = environment.hfApiToken;
+  private openAiApiEndpoint = environment.openAiApiEndpoint;
+  private openAiApiToken = environment.openAiApiToken;
 
   constructor(private chatService: ChatService, private http: HttpClient) {
   }
@@ -52,6 +54,11 @@ export class ChatComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.formGroup = new FormGroup({
       prompt: new FormControl<string | null>({value: '', disabled: false })
+    });
+
+    // Subscribe to onNewMessage events
+    this.chatService.onNewMessage.subscribe((message: string) => {
+      this.textToSpeech(message);
     });
   }
 
@@ -124,7 +131,35 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
   }
 
+  async textToSpeech(inputText: string): Promise<void> {
+    try {
+      const headers = new HttpHeaders({
+        'Authorization': 'Bearer '.concat(this.openAiApiToken),
+        'Content-Type': 'application/json',
+        'Accept': 'audio/mpeg'
+      });
+
+      const body = JSON.stringify({
+        model: "tts-1",
+        voice: "alloy",
+        input: inputText
+      });
+
+      // Note: Adjust the API endpoint as necessary
+      const response = await this.http.post(this.openAiApiEndpoint, body, { headers, responseType: 'blob' }).toPromise();
+
+      // Assuming the API returns the speech audio as a blob, play the audio
+      const url = URL.createObjectURL(response as Blob);
+      let audio = new Audio(url);
+      audio.load();
+      audio.play();
+    } catch (error) {
+      console.error('Error with text-to-speech API', error);
+    }
+  }
+
   ngOnDestroy() {
+    this.chatService.onNewMessage.unsubscribe();
   }
 
   handleAction(message: string) {

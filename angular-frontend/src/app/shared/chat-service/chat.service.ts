@@ -1,7 +1,8 @@
-import {Injectable} from '@angular/core';
+import {Injectable, EventEmitter} from '@angular/core';
 import {BehaviorSubject, Observable} from "rxjs";
 import {WebsocketService} from "../websocket-service/websocket.service";
 import {Message, MessageType} from "../../example/model/Message";
+import {ChatComponent} from "../../example/chat-component/chat.component";
 
 @Injectable({
   providedIn: 'root'
@@ -21,6 +22,13 @@ export class ChatService {
           window.scrollTo(0, document.body.scrollHeight);
         } else if (message.type === 'ChatMessageFinished') {
           let finished = message as unknown as { messageId: number, imageUrl: string };
+          let currentMessages = this.subject.value;
+          let existingMessage = currentMessages.find((msg) => msg.id === finished.messageId);
+          if (existingMessage && existingMessage.message) {
+            this.convertToSpeech(existingMessage.message);
+          } else {
+            console.error('Message is undefined');
+          }
           this.addImage(finished.messageId, finished.imageUrl);
           window.scrollTo(0, document.body.scrollHeight);
         } else if (message.type === 'Error') {
@@ -31,6 +39,14 @@ export class ChatService {
       err => {
         console.error('Error receiving WebSocket message:', err);
       });
+  }
+
+  // Add an EventEmitter
+  public onNewMessage = new EventEmitter<string>();
+
+  convertToSpeech(message: string) {
+    // Emit an event with the message
+    this.onNewMessage.emit(message);
   }
 
   public sendMessage(message: string) {
