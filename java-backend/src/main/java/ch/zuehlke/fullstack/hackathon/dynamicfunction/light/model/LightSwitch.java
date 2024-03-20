@@ -1,27 +1,33 @@
 package ch.zuehlke.fullstack.hackathon.dynamicfunction.light.model;
 
-public class LightSwitch {
-    private static LightSwitch instance;
+import org.springframework.stereotype.Service;
 
-    private boolean on;
+@Service
+public class LightSwitch {
+
+    public enum Color {
+        OFF,
+        RED,
+        GREEN,
+        BLUE,
+        YELLOW,
+        CYAN,
+        MAGENTA,
+        WHITE,
+    }
+
+    private Color color;
 
     private LightSwitch() {
-        on = false;
+        color = Color.OFF;
     }
 
-    public static synchronized LightSwitch getInstance() {
-        if (instance == null) {
-            instance = new LightSwitch();
-        }
-        return instance;
+    public Color getColor() {
+        return color;
     }
 
-    public void setStatus(boolean value) {
-        on = value;
-    }
-
-    public boolean isOn() {
-        return on;
+    public void setColor(Color color) {
+        this.color = color;
     }
 }
 

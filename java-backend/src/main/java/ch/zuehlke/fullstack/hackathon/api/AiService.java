@@ -3,20 +3,14 @@ package ch.zuehlke.fullstack.hackathon.api;
 import ch.zuehlke.fullstack.hackathon.api.model.ImageUrl;
 import ch.zuehlke.fullstack.hackathon.dynamicfunction.Action;
 import ch.zuehlke.fullstack.hackathon.dynamicfunction.ChatMessageWrapper;
-import ch.zuehlke.fullstack.hackathon.dynamicfunction.bistro.BistroAction;
-import ch.zuehlke.fullstack.hackathon.dynamicfunction.light.LightAction;
 import ch.zuehlke.fullstack.hackathon.websocket.WebsocketMessage;
-import com.theokanning.openai.completion.chat.ChatCompletionRequest;
-import com.theokanning.openai.completion.chat.ChatFunctionCall;
-import com.theokanning.openai.completion.chat.ChatMessage;
-import com.theokanning.openai.completion.chat.ChatMessageRole;
 import com.theokanning.openai.completion.chat.*;
 import com.theokanning.openai.image.CreateImageRequest;
 import com.theokanning.openai.image.Image;
 import com.theokanning.openai.service.OpenAiService;
-import lombok.extern.slf4j.Slf4j;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -30,12 +24,14 @@ import java.util.Optional;
 public class AiService {
 
     private static final String GPT_MODEL = "gpt-3.5-turbo";
-    private static final List<Action> ALLOWED_ACTIONS = List.of(new LightAction(), new BistroAction());
 
-    @Value("${app.openapi.key}")
-    private String apiKey;
+    private final ActionFactory actionFactory;
+    private final OpenAiService openAiService;
 
-    private OpenAiService openAiService;
+    public AiService(ActionFactory actionFactory, @Value("${app.openapi.key}") String apiKey) {
+        this.actionFactory = actionFactory;
+        openAiService = new OpenAiService(apiKey);
+    }
 
     public Optional<String> getImageByPrompt(String prompt) {
         if (prompt == null) {
@@ -50,17 +46,9 @@ public class AiService {
                 .build();
         log.info("generating image...");
 
-        return getOpenAiService().createImage(request).getData().stream()
+        return openAiService.createImage(request).getData().stream()
                 .findFirst()
                 .map(Image::getUrl);
-    }
-
-    private OpenAiService getOpenAiService() {
-        if (openAiService == null) {
-            this.openAiService = new OpenAiService(apiKey);
-        }
-
-        return openAiService;
     }
 
     private void checkFlowableNotNull(Flowable<ChatCompletionChunk> flowable) {
@@ -81,16 +69,16 @@ public class AiService {
 
         ChatFunctionCall functionCall = responseMessage.getFunctionCall();
         if (functionCall != null) {
-            ActionFactory.getAction(functionCall.getName()).ifPresent(action -> {
+            actionFactory.getAction(functionCall.getName()).ifPresent(action -> {
                 ChatMessageWrapper actionMessage = action.execute(functionCall);
                 messages.add(actionMessage.chatMessage());
                 var prompt = getImageByPrompt(actionMessage.imagePrompt());
-                prompt.ifPresent(s -> imageUrl.setValue(s));
+                prompt.ifPresent(imageUrl::setValue);
             });
         }
 
         var chatRequest = createFunctionRequest(messages);
-        var flowable = getOpenAiService().streamChatCompletion(chatRequest);
+        var flowable = openAiService.streamChatCompletion(chatRequest);
         checkFlowableNotNull(flowable);
 
         return createWebsocketMessageFlowable(flowable, imageUrl.getValue());
@@ -122,11 +110,11 @@ public class AiService {
     }
 
     private ChatMessage executeCall(ChatCompletionRequest request) {
-        return getOpenAiService().createChatCompletion(request).getChoices().get(0).getMessage();
+        return openAiService.createChatCompletion(request).getChoices().get(0).getMessage();
     }
 
     private ChatCompletionRequest createFunctionRequest(List<ChatMessage> messages) {
-        List<ChatFunctionDynamic> functions = ALLOWED_ACTIONS.stream().map(Action::getFunction).toList();
+        List<ChatFunctionDynamic> functions = actionFactory.allowedActions.stream().map(Action::getFunction).toList();
         return ChatCompletionRequest
                 .builder()
                 .model(GPT_MODEL)

@@ -17,6 +17,12 @@ public class LightAction implements Action {
 
     private static final String ACTION = "light_action";
 
+    private final LightSwitch lightSwitch;
+
+    public LightAction(LightSwitch lightSwitch) {
+        this.lightSwitch = lightSwitch;
+    }
+
     @Override
     public boolean canHandle(String actionName) {
         return actionName.equals(ACTION);
@@ -26,19 +32,18 @@ public class LightAction implements Action {
     public ChatMessageWrapper execute(ChatFunctionCall functionCall) {
         boolean activate = functionCall.getArguments().get("light").asBoolean();
 
-        LightSwitch lightSwitch = LightSwitch.getInstance();
         if (activate) {
-            lightSwitch.setStatus(true);
+            lightSwitch.setColor(LightSwitch.Color.WHITE);
             log.info("LightSwitch is now activated");
         } else {
-            lightSwitch.setStatus(false);
+            lightSwitch.setColor(LightSwitch.Color.OFF);
             log.info("LightSwitch is now deactivated");
         }
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode response = mapper.createObjectNode();
         response.put("status", true);
 
-        return new ChatMessageWrapper(new  ChatMessage(ChatMessageRole.FUNCTION.value(), response.toString(), ACTION), null);
+        return new ChatMessageWrapper(new ChatMessage(ChatMessageRole.FUNCTION.value(), response.toString(), ACTION), null);
     }
 
     @Override
