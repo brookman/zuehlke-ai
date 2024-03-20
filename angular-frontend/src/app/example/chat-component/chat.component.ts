@@ -51,7 +51,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.formGroup = new FormGroup({
-      prompt: new FormControl<string | null>({value: '', disabled: false}, Validators.required)
+      prompt: new FormControl<string | null>({value: '', disabled: false })
     });
   }
 
