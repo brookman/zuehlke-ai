@@ -11,6 +11,8 @@ import {ChatService} from "../../shared/chat-service/chat.service";
 import {ButtonGroupModule} from "primeng/buttongroup";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {environment} from '../../../environments/environment';
+import {ActionComponent} from "../action/action.component";
+import {AnimateOnScrollModule} from "primeng/animateonscroll";
 
 
 @Component({
@@ -24,7 +26,9 @@ import {environment} from '../../../environments/environment';
     IconFieldModule,
     InputGroupModule,
     InputTextModule,
-    ButtonGroupModule
+    ButtonGroupModule,
+    ActionComponent,
+    AnimateOnScrollModule
   ],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
@@ -58,14 +62,17 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.chatService.sendMessage(promptControl.value);
     }
 
-    this.setInputValue("");
+    this.formGroup.reset();
+    // this.setInputValue("");
   }
 
   setInputValue(message: string) {
+    console.log("setInputValue called")
     const promptControl = this.formGroup.get('prompt');
     if (promptControl) {
-      promptControl.setValue(message)
+      promptControl.setValue(message);
     }
+    this.formGroup.updateValueAndValidity();
   }
 
   async startRecording() {
@@ -83,10 +90,8 @@ export class ChatComponent implements OnInit, OnDestroy {
         // Convert Blob to File if necessary
         const audioFile = new File([audioBlob], "filename.flac", {type: 'audio/flac'});
         this.transcription = await this.sendAudioToAPI(audioFile);
-
-        const promptControl = this.formGroup.get('prompt');
-        this.setInputValue(this.transcription);
         console.log(this.transcription); // Log the transcription to verify it works
+        this.setInputValue(this.transcription);
       };
       this.mediaRecorder.start();
     } catch (error) {
@@ -120,5 +125,21 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+  }
+
+  handleLights(message: string) {
+    this.chatService.sendMessage(message);
+  }
+
+  handleMealPlanToday(message: string) {
+    this.chatService.sendMessage(message);
+  }
+
+  handleRomanticAtmosphere(message: string) {
+    this.chatService.sendMessage(message);
+  }
+
+  handleDiscoMood(message: string) {
+    this.chatService.sendMessage(message);
   }
 }
