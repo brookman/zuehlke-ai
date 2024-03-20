@@ -51,6 +51,7 @@ export class ChatService {
     });
     this.subject.next(currentMessages);
     this.websocketService.sendMessage(message);
+    window.scrollTo(0, document.body.scrollHeight);
   }
 
   buildMessage(id: number, message: string) {
