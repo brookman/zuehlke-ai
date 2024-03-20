@@ -139,7 +139,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.chatService.sendMessage(message);
   }
 
-  handleVegetarialMealFriday(message: string) {
+  handleDiscoMood(message: string) {
     this.chatService.sendMessage(message);
   }
 }
