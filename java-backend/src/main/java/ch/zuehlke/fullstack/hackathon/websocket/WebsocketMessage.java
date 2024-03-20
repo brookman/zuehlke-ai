@@ -7,11 +7,13 @@ public class WebsocketMessage {
     private final String content;
     private final String imgUrl;
     private final boolean endMessage;
+    private final boolean isImageMessage;
 
-    public WebsocketMessage(String content, String imgUrl, boolean endMessage) {
+    public WebsocketMessage(String content, String imgUrl, boolean endMessage, boolean isImageMessage) {
         this.content = content;
         this.imgUrl = imgUrl;
         this.endMessage = endMessage;
+        this.isImageMessage = isImageMessage;
     }
 
     public String content() {
@@ -24,6 +26,10 @@ public class WebsocketMessage {
 
     public boolean endMessage() {
         return endMessage;
+    }
+
+    public boolean isImageMessage() {
+        return isImageMessage;
     }
 
     @Override

@@ -91,17 +91,19 @@ public class AiService {
                     .subscribe(choice -> {
                         var m = choice.getMessage();
                         if (m == null) {
-                            emitter.onNext(new WebsocketMessage(null, getImageByPrompt(prompt).orElse(null), true)); // Send end signal
+                            emitter.onNext(new WebsocketMessage(null, null, true, false));
+                            getImageByPrompt(prompt).ifPresent(s -> emitter.onNext(new WebsocketMessage(null, s, false, true)));
                             emitter.onComplete();
                             return;
                         }
                         var c = m.getContent();
                         if (c == null) {
-                            emitter.onNext(new WebsocketMessage(null, getImageByPrompt(prompt).orElse(null), true)); // Send end signal
+                            emitter.onNext(new WebsocketMessage(null, null, true, false));
+                            getImageByPrompt(prompt).ifPresent(s -> emitter.onNext(new WebsocketMessage(null, s, false, true)));
                             emitter.onComplete();
                             return;
                         }
-                        emitter.onNext(new WebsocketMessage(c, null, false));
+                        emitter.onNext(new WebsocketMessage(c, null, false, false));
 
 
                     });

@@ -21,7 +21,7 @@ export class ChatService {
           this.buildMessage(chunk.messageId, chunk.chunk);
           window.scrollTo(0, document.body.scrollHeight);
         } else if (message.type === 'ChatMessageFinished') {
-          let finished = message as unknown as { messageId: number, imageUrl: string };
+          let finished = message as unknown as { messageId: number};
           let currentMessages = this.subject.value;
           let existingMessage = currentMessages.find((msg) => msg.id === finished.messageId);
           if (existingMessage && existingMessage.message) {
@@ -29,6 +29,9 @@ export class ChatService {
           } else {
             console.error('Message is undefined');
           }
+          window.scrollTo(0, document.body.scrollHeight);
+        }else if (message.type === 'AddImageToMessage') {
+          let finished = message as unknown as { messageId: number, imageUrl: string };
           this.addImage(finished.messageId, finished.imageUrl);
           window.scrollTo(0, document.body.scrollHeight);
         } else if (message.type === 'Error') {

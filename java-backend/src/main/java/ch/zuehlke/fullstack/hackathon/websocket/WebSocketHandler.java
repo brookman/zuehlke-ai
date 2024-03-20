@@ -40,9 +40,14 @@ public class WebSocketHandler extends TextWebSocketHandler {
     }
 
     private MessageDto buildPayload(int messageId, WebsocketMessage websocketMessage) {
-        if (websocketMessage.endMessage()) {
+        if (websocketMessage.isImageMessage()) {
             String imgUrl = websocketMessage.imgUrl();
-            var response = new MessageDto.ChatMessageFinished(messageId, imgUrl);
+            var response = new MessageDto.AddImageToMessage(messageId, imgUrl);
+            log.info(response.toString());
+            return response;
+        }
+        if (websocketMessage.endMessage()) {
+            var response = new MessageDto.ChatMessageFinished(messageId);
             log.info(response.toString());
             return response;
         }
