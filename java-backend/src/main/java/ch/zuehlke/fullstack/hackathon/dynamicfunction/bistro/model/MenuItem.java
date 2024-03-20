@@ -1,4 +1,4 @@
-package ch.zuehlke.fullstack.hackathon.dynamicfunction.bistro;
+package ch.zuehlke.fullstack.hackathon.dynamicfunction.bistro.model;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
