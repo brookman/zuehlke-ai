@@ -12,6 +12,9 @@ import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.ChatMessageRole;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashSet;
+import java.util.List;
+
 @Slf4j
 public class LightAction implements Action {
 
@@ -31,9 +34,10 @@ public class LightAction implements Action {
     @Override
     public ChatMessageWrapper execute(ChatFunctionCall functionCall) {
         boolean activate = functionCall.getArguments().get("light").asBoolean();
-
+        LightSwitch.Color color = LightSwitch.Color.valueOf(functionCall.getArguments().get("color").asText());
+        log.info("Color: " + color.name());
         if (activate) {
-            lightSwitch.setColor(LightSwitch.Color.WHITE);
+            lightSwitch.setColor(color);
             log.info("LightSwitch is now activated");
         } else {
             lightSwitch.setColor(LightSwitch.Color.OFF);
@@ -55,6 +59,13 @@ public class LightAction implements Action {
                         .name("light")
                         .type("boolean")
                         .description("The value to either activate or deactivate")
+                        .required(true)
+                        .build())
+                .addProperty(ChatFunctionProperty.builder()
+                        .name("color")
+                        .type("string")
+                        .description("The color of the light. If you dont know which color to pick, pick WHITE.")
+                        .enumValues(new HashSet<>(List.of(LightSwitch.Color.values())))
                         .required(true)
                         .build())
                 .build();
