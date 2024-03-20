@@ -2,7 +2,11 @@ package ch.zuehlke.fullstack.hackathon.dynamicfunction.bistro;
 
 import ch.zuehlke.fullstack.hackathon.dynamicfunction.Action;
 import ch.zuehlke.fullstack.hackathon.dynamicfunction.ChatMessageWrapper;
+import ch.zuehlke.fullstack.hackathon.dynamicfunction.bistro.model.MenuItem;
+import ch.zuehlke.fullstack.hackathon.dynamicfunction.bistro.model.RelativeDay;
+import ch.zuehlke.fullstack.hackathon.dynamicfunction.bistro.model.Weekday;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.theokanning.openai.completion.chat.ChatFunctionCall;
@@ -19,13 +23,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 public class BistroAction implements Action {
 
     private static final String ACTION = "bistro_action";
     private static final String WEEKDAY = "weekday";
+    private static final String VEGETARIAN = "vegetarian";
+    private static final String RELATIVE_DAY = "relative_day";
+    private static final String MENU_FILE = "weekly_menu.json";
 
     @Override
     public boolean canHandle(String actionName) {
@@ -35,8 +41,9 @@ public class BistroAction implements Action {
     @Override
     public ChatMessageWrapper execute(ChatFunctionCall functionCall) {
         String weekday = functionCall.getArguments().get(WEEKDAY).asText();
-        boolean vegetarian = functionCall.getArguments().get("vegetarian").asBoolean();
-        String relativeDay = functionCall.getArguments().get("relative_day").asText();
+        boolean vegetarian = functionCall.getArguments().get(VEGETARIAN).asBoolean();
+        JsonNode relativeDayJsonNode = functionCall.getArguments().get(RELATIVE_DAY);
+        String relativeDay = relativeDayJsonNode == null ? null : relativeDayJsonNode.asText();
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode response = mapper.createObjectNode();
@@ -74,17 +81,17 @@ public class BistroAction implements Action {
                         .required(true)
                         .build())
                 .addProperty(ChatFunctionProperty.builder()
-                        .name("vegetarian")
+                        .name(VEGETARIAN)
                         .type("boolean")
                         .description("Either being true or false to decide if the vegetarian meal should be extracted or meat")
                         .required(true)
                         .build())
                 .addProperty(ChatFunctionProperty.builder()
-                        .name("relative_day")
+                        .name(RELATIVE_DAY)
                         .type("string")
                         .description("The relative day like today, tomorrow, yesterday")
                         .enumValues(new HashSet<>(Arrays.stream(RelativeDay.values()).map(RelativeDay::name).toList()))
-                        .required(true)
+                        .required(false)
                         .build())
                 .build();
     }
@@ -93,7 +100,7 @@ public class BistroAction implements Action {
         List<MenuItem> weeklyMenu = new ArrayList<>();
         try {
             ObjectMapper mapper = new ObjectMapper();
-            weeklyMenu = mapper.readValue(new ClassPathResource("weekly_menu.json").getInputStream(), new TypeReference<>() {});
+            weeklyMenu = mapper.readValue(new ClassPathResource(MENU_FILE).getInputStream(), new TypeReference<>() {});
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -102,37 +109,5 @@ public class BistroAction implements Action {
                 .filter(menu -> !vegetarian || menu.getMenu_type().equals("Vegetarian"))
                 .map(menu -> menu.getMenu_type() + ": " + menu.getName() + ";")
                 .toList();
-    }
-
-    enum Weekday {
-        MONDAY,
-        TUESDAY,
-        WEDNESDAY,
-        THURSDAY,
-        FRIDAY,
-        UNKNOWN;
-
-        public static Weekday getWeekday(int dayNumber) {
-            switch (dayNumber) {
-                case 1:
-                    return Weekday.MONDAY;
-                case 2:
-                    return Weekday.TUESDAY;
-                case 3:
-                    return Weekday.WEDNESDAY;
-                case 4:
-                    return Weekday.THURSDAY;
-                case 5:
-                    return Weekday.FRIDAY;
-                default:
-                    return Weekday.UNKNOWN;
-            }
-        }
-    }
-
-    enum RelativeDay {
-        YESTERDAY,
-        TODAY,
-        TOMORROW
     }
 }
