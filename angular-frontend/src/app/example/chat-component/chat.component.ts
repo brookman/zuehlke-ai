@@ -127,19 +127,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
   }
 
-  handleLights(message: string) {
-    this.chatService.sendMessage(message);
-  }
-
-  handleMealPlanToday(message: string) {
-    this.chatService.sendMessage(message);
-  }
-
-  handleRomanticAtmosphere(message: string) {
-    this.chatService.sendMessage(message);
-  }
-
-  handleDiscoMood(message: string) {
+  handleAction(message: string) {
     this.chatService.sendMessage(message);
   }
 }
