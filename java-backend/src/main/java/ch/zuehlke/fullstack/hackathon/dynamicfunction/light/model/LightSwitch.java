@@ -14,6 +14,7 @@ public class LightSwitch {
         CYAN,
         MAGENTA,
         WHITE,
+        DISCO
     }
 
     private Color color;

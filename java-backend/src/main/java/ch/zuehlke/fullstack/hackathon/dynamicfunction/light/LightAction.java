@@ -64,7 +64,7 @@ public class LightAction implements Action {
                 .addProperty(ChatFunctionProperty.builder()
                         .name("color")
                         .type("string")
-                        .description("The color of the light. If you dont know which color to pick, pick WHITE.")
+                        .description("The color of the light. If the user requests Disco, set it to DISCO. If you dont know which color to pick, pick WHITE.")
                         .enumValues(new HashSet<>(List.of(LightSwitch.Color.values())))
                         .required(true)
                         .build())
