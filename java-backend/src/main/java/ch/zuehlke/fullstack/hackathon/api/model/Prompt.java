@@ -3,13 +3,13 @@ package ch.zuehlke.fullstack.hackathon.api.model;
 import java.util.Objects;
 import java.util.Optional;
 
-public class ImageUrl {
+public class Prompt {
     private String value;
 
-    public ImageUrl() {}
+    public Prompt() {}
 
-    public Optional<String> getValue() {
-        return Optional.ofNullable(value);
+    public String getValue() {
+        return value;
     }
 
     public void setValue(String value) {
@@ -20,7 +20,7 @@ public class ImageUrl {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (ImageUrl) obj;
+        var that = (Prompt) obj;
         return Objects.equals(this.value, that.value);
     }
 

@@ -1,6 +1,6 @@
 package ch.zuehlke.fullstack.hackathon.api;
 
-import ch.zuehlke.fullstack.hackathon.api.model.ImageUrl;
+import ch.zuehlke.fullstack.hackathon.api.model.Prompt;
 import ch.zuehlke.fullstack.hackathon.dynamicfunction.Action;
 import ch.zuehlke.fullstack.hackathon.dynamicfunction.ChatMessageWrapper;
 import ch.zuehlke.fullstack.hackathon.websocket.WebsocketMessage;
@@ -65,15 +65,14 @@ public class AiService {
         var request = createFunctionRequest(messages);
         var responseMessage = executeCall(request);
 
-        ImageUrl imageUrl = new ImageUrl();
+        Prompt prompt = new Prompt();
 
         ChatFunctionCall functionCall = responseMessage.getFunctionCall();
         if (functionCall != null) {
             actionFactory.getAction(functionCall.getName()).ifPresent(action -> {
                 ChatMessageWrapper actionMessage = action.execute(functionCall);
                 messages.add(actionMessage.chatMessage());
-                var prompt = getImageByPrompt(actionMessage.imagePrompt());
-                prompt.ifPresent(imageUrl::setValue);
+                prompt.setValue(actionMessage.imagePrompt());
             });
         }
 
@@ -81,10 +80,10 @@ public class AiService {
         var flowable = openAiService.streamChatCompletion(chatRequest);
         checkFlowableNotNull(flowable);
 
-        return createWebsocketMessageFlowable(flowable, imageUrl.getValue());
+        return createWebsocketMessageFlowable(flowable, prompt.getValue());
     }
 
-    private Flowable<WebsocketMessage> createWebsocketMessageFlowable(Flowable<ChatCompletionChunk> flowable, Optional<String> imgUrl) {
+    private Flowable<WebsocketMessage> createWebsocketMessageFlowable(Flowable<ChatCompletionChunk> flowable, String prompt) {
         return Flowable.create(emitter -> {
             flowable.map(ChatCompletionChunk::getChoices)
                     .filter(choices -> !choices.isEmpty())
@@ -92,13 +91,13 @@ public class AiService {
                     .subscribe(choice -> {
                         var m = choice.getMessage();
                         if (m == null) {
-                            emitter.onNext(new WebsocketMessage(null, imgUrl.orElse(null), true)); // Send end signal
+                            emitter.onNext(new WebsocketMessage(null, getImageByPrompt(prompt).orElse(null), true)); // Send end signal
                             emitter.onComplete();
                             return;
                         }
                         var c = m.getContent();
                         if (c == null) {
-                            emitter.onNext(new WebsocketMessage(null, imgUrl.orElse(null), true)); // Send end signal
+                            emitter.onNext(new WebsocketMessage(null, getImageByPrompt(prompt).orElse(null), true)); // Send end signal
                             emitter.onComplete();
                             return;
                         }

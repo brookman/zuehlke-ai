@@ -33,7 +33,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
             this.aiService.submitFunctionStreamed(message.getPayload())
                     .subscribe(websocketMessage -> session.sendMessage(serialize(buildPayload(messageId, websocketMessage))));
         } catch (Exception exception) {
-            String errorMessage = "Message of the day could not be fetched";
+            String errorMessage = "The message " + message.getPayload() + " could not be processed.";
             log.error(errorMessage, exception);
             session.sendMessage(serialize(new MessageDto.Error(errorMessage)));
         }
