@@ -18,9 +18,11 @@ export class ChatService {
         if (message.type === 'ChatMessageChunk') {
           let chunk = message as unknown as { messageId: number, chunk: string };
           this.buildMessage(chunk.messageId, chunk.chunk);
+          window.scrollTo(0, document.body.scrollHeight);
         } else if (message.type === 'ChatMessageFinished') {
           let finished = message as unknown as { messageId: number, imageUrl: string };
           this.addImage(finished.messageId, finished.imageUrl);
+          window.scrollTo(0, document.body.scrollHeight);
         } else if (message.type === 'Error') {
           let error = message as unknown as { errorMessage: string };
           console.error(error.errorMessage);
