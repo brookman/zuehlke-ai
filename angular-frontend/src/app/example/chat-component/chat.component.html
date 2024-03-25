@@ -8,7 +8,7 @@
 <form [formGroup]="formGroup" (ngSubmit)="handleSubmit()" class="">
 
   <p-inputGroup>
-    <input type="text" pInputText formControlName="prompt" placeholder="Hi Zühlkee ..." />
+    <input type="text" pInputText formControlName="prompt" placeholder="Hi Zühlke assistant ..." />
     @if (isRecording) {
       <button type="button" (click)="stopRecording()" pButton icon="pi pi-stop-circle" class="p-button-danger" ></button>
     } @else {
