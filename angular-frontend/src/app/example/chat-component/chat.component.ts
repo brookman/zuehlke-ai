@@ -1,18 +1,18 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
+import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {InputTextareaModule} from "primeng/inputtextarea";
 import {ButtonModule} from "primeng/button";
 import {InputIconModule} from "primeng/inputicon";
 import {IconFieldModule} from "primeng/iconfield";
 import {InputGroupModule} from "primeng/inputgroup";
 import {InputTextModule} from "primeng/inputtext";
-import {WebsocketService} from "../../shared/websocket-service/websocket.service";
 import {ChatService} from "../../shared/chat-service/chat.service";
 import {ButtonGroupModule} from "primeng/buttongroup";
-import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {HttpClient} from "@angular/common/http";
 import {environment} from '../../../environments/environment';
 import {ActionComponent} from "../action/action.component";
 import {AnimateOnScrollModule} from "primeng/animateonscroll";
+import {OpenAI} from 'openai';
 
 
 @Component({
@@ -43,17 +43,18 @@ export class ChatComponent implements OnInit, OnDestroy {
   audioChunks: Blob[] = [];
   transcription = '';
 
-  private hfApiEndpoint = environment.hfApiEndpoint;
-  private hfApiToken = environment.hfApiToken;
-  private openAiApiEndpoint = environment.openAiApiEndpoint;
-  private openAiApiToken = environment.openAiApiToken;
+  private openai = new OpenAI({
+    organization: environment.openAiOrganization,
+    apiKey: environment.openAiApiToken,
+    dangerouslyAllowBrowser: true,
+  });
 
   constructor(private chatService: ChatService, private http: HttpClient) {
   }
 
   ngOnInit() {
     this.formGroup = new FormGroup({
-      prompt: new FormControl<string | null>({value: '', disabled: false })
+      prompt: new FormControl<string | null>({value: '', disabled: false})
     });
 
     // Subscribe to onNewMessage events
@@ -83,19 +84,22 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   async startRecording() {
+    const audioType = 'audio/webm';
+    const fileName = 'audio.webm';
+
     this.isRecording = true;
     this.audioChunks = [];
     this.setInputValue("");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({audio: true});
-      this.mediaRecorder = new MediaRecorder(stream);
+      this.mediaRecorder = new MediaRecorder(stream, {mimeType: audioType});
       this.mediaRecorder.ondataavailable = (event) => {
         this.audioChunks.push(event.data);
       };
       this.mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(this.audioChunks, {type: 'audio/flac'});
-        // Convert Blob to File if necessary
-        const audioFile = new File([audioBlob], "filename.flac", {type: 'audio/flac'});
+        const audioBlob = new Blob(this.audioChunks, {type: audioType});
+        const audioFile = new File([audioBlob], fileName, {type: audioType});
+
         this.transcription = await this.sendAudioToAPI(audioFile);
         console.log(this.transcription); // Log the transcription to verify it works
         this.setInputValue(this.transcription);
@@ -111,19 +115,15 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.mediaRecorder.stop();
   }
 
-  async sendAudioToAPI(file: Blob): Promise<string> {
+  async sendAudioToAPI(audioFile: File): Promise<string> {
     try {
-      const headers = new HttpHeaders({
-        'Authorization': 'Bearer '.concat(this.hfApiToken),
-        'Accept': 'application/json',
-      });
-      const response = await this.http.post(this.hfApiEndpoint, file, {headers, responseType: 'json'}).toPromise();
 
-      // Assuming the API returns a JSON object with a "text" property
-      if (response && typeof response === 'object' && 'text' in response) {
-        return response['text'] as string;
-      }
-      throw new Error('Invalid response structure'); // Throw an error if response structure is not as expected
+      const response = await this.openai.audio.transcriptions.create({
+        file: audioFile,
+        model: 'whisper-1'
+      });
+
+      return response.text;
     } catch (error) {
       console.error('Error sending audio to API', error);
       // Decide on a fallback string. Here, I'm using an empty string, but you might prefer something else.
@@ -133,26 +133,21 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   async textToSpeech(inputText: string): Promise<void> {
     try {
-      const headers = new HttpHeaders({
-        'Authorization': 'Bearer '.concat(this.openAiApiToken),
-        'Content-Type': 'application/json',
-        'Accept': 'audio/mpeg'
+
+      const response = await this.openai.audio.speech.create({
+        input: inputText,
+        model: 'tts-1',
+        voice: 'alloy',
+        response_format: 'mp3',
       });
 
-      const body = JSON.stringify({
-        model: "tts-1",
-        voice: "alloy",
-        input: inputText
-      });
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const audio = new Audio(blobUrl);
 
-      // Note: Adjust the API endpoint as necessary
-      const response = await this.http.post(this.openAiApiEndpoint, body, { headers, responseType: 'blob' }).toPromise();
-
-      // Assuming the API returns the speech audio as a blob, play the audio
-      const url = URL.createObjectURL(response as Blob);
-      let audio = new Audio(url);
       audio.load();
-      audio.play();
+      await audio.play();
+
     } catch (error) {
       console.error('Error with text-to-speech API', error);
     }
